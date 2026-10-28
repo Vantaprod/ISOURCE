@@ -19,12 +19,10 @@ Future changes must be full-file replacements with version bumps below.
 
 ## v1.1.0 — Visual alignment to Isource reference
 - src/app/globals.css
-- src/app/page.tsx
-- src/app/layout.tsx (superseded by v1.2.0)
-- src/components/layout/Header.tsx (superseded by v1.2.0)
-- src/components/product/ProductCard.tsx (superseded by v1.2.0)
-- src/components/home/*.tsx
+- src/app/page.tsx (superseded by v1.1.0 update)
 - src/components/layout/AnnouncementBar.tsx, CategoryNav.tsx, Footer.tsx
+- src/components/home/*.tsx
+- src/components/product/ProductCard.tsx (superseded by v1.2.0)
 
 ## v1.2.0 — Product v2, Wishlist, Search, Category v2
 - src/context/WishlistContext.tsx ............... NEW
@@ -33,8 +31,13 @@ Future changes must be full-file replacements with version bumps below.
 - src/app/product/[slug]/ProductGallery.tsx ...... NEW
 - src/app/product/[slug]/ProductTabs.tsx ........ NEW
 - src/app/product/[slug]/WishlistButton.tsx ..... NEW
-- src/app/product/[slug]/page.tsx ............... REPLACED v2
-- src/app/category/[slug]/page.tsx .............. REPLACED v2
-- src/app/layout.tsx ............................ REPLACED v2
-- src/components/layout/Header.tsx .............. REPLACED v2
-- src/components/product/ProductCard.tsx ........ REPLACED v2
+- src/app/product/[slug]/page.tsx ............... REPLACED
+- src/app/category/[slug]/page.tsx .............. REPLACED
+- src/app/layout.tsx ............................ REPLACED
+- src/components/layout/Header.tsx .............. REPLACED
+- src/components/product/ProductCard.tsx ........ REPLACED
+
+## v1.3.0 — Checkout UI + Demo boundary
+- src/lib/checkout-schema.ts .................... NEW
+- src/app/checkout/page.tsx ..................... NEW
+- src/app/checkout/confirmation/page.tsx ........ NEW
