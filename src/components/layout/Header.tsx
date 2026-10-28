@@ -7,12 +7,21 @@ import { AnnouncementBar } from "./AnnouncementBar";
 import { CategoryNav } from "./CategoryNav";
 import { MobileMenu } from "./MobileMenu";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
   const { itemCount } = useCart();
+  const { count: wishCount } = useWishlist();
   const router = useRouter();
-  function submitSearch(e: React.FormEvent) { e.preventDefault(); const q = query.trim(); if (!q) return; router.push(`/category/electronics?q=${encodeURIComponent(q)}`); }
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    router.push(`/search?q=${encodeURIComponent(q)}`);
+  }
+
   return (
     <>
       <AnnouncementBar />
@@ -30,7 +39,10 @@ export function Header() {
             </form>
             <div className="ml-auto flex items-center gap-1 md:gap-3">
               <Link href="/account" className="flex items-center gap-2 px-2 py-1 text-sm hover:text-primary" aria-label="Account"><User size={20} /><span className="hidden lg:inline">Account</span></Link>
-              <Link href="/wishlist" className="hidden md:flex items-center gap-2 px-2 py-1 text-sm hover:text-primary" aria-label="Wishlist"><Heart size={20} /><span className="hidden lg:inline">Wishlist</span></Link>
+              <Link href="/wishlist" className="relative hidden md:flex items-center gap-2 px-2 py-1 text-sm hover:text-primary" aria-label="Wishlist">
+                <Heart size={20} /><span className="hidden lg:inline">Wishlist</span>
+                {wishCount > 0 && (<span className="absolute -top-1 -right-1 min-w-[18px] rounded-full bg-charcoal text-white text-[10px] leading-[18px] text-center font-bold px-1">{wishCount}</span>)}
+              </Link>
               <Link href="/cart" className="relative flex items-center gap-2 px-2 py-1 text-sm hover:text-primary" aria-label="Cart">
                 <ShoppingCart size={20} /><span className="hidden lg:inline">Cart</span>
                 {itemCount > 0 && (<span className="absolute -top-1 -right-1 min-w-[18px] rounded-full bg-primary text-white text-[10px] leading-[18px] text-center font-bold px-1">{itemCount}</span>)}
