@@ -38,7 +38,16 @@ Future changes must be full-file replacements with version bumps below.
 - src/app/checkout/confirmation/page.tsx
 
 ## v1.4.0 — Customer Account & Auth UI
-- src/lib/auth-schema.ts ........................ NEW
-- src/app/login/page.tsx ........................ NEW
-- src/app/register/page.tsx ..................... NEW
-- src/app/account/page.tsx ...................... NEW
+- src/lib/auth-schema.ts
+- src/app/login/page.tsx
+- src/app/register/page.tsx
+- src/app/account/page.tsx
+
+## v1.5.0 — Storefront Info Pages
+- src/app/about/page.tsx ......................... NEW
+- src/app/contact/page.tsx ....................... NEW
+- src/app/help/page.tsx .......................... NEW
+- src/app/delivery/page.tsx ...................... NEW
+- src/app/returns/page.tsx ....................... NEW
+- src/app/sell/page.tsx .......................... NEW
+- src/app/orders/track/page.tsx .................. NEW
