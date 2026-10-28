@@ -1,0 +1,3 @@
+export function formatNaira(kobo: number): string { return new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(kobo / 100); }
+export function formatNairaShort(kobo: number): string { return new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(kobo / 100); }
+export function discountPercent(priceKobo: number, originalKobo?: number): number | null { if (!originalKobo || originalKobo <= priceKobo) return null; return Math.round(((originalKobo - priceKobo) / originalKobo) * 100); }
