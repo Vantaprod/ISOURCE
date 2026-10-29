@@ -1,4 +1,4 @@
-import { RotateCcw, ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 export default function ReturnsPage() {
   return (

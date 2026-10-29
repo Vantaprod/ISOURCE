@@ -8,8 +8,13 @@ import { TrustBar } from "@/components/home/TrustBar";
 import { Newsletter } from "@/components/home/Newsletter";
 import { ProductCard } from "@/components/product/ProductCard";
 import { getProductsByTag, getProductsByCategory } from "@/lib/catalog";
-export default function HomePage() {
-  const flashDeals = getProductsByTag("flash-deal"); const bestSellers = getProductsByTag("best-seller"); const electronics = getProductsByCategory("electronics"); const home = getProductsByCategory("home-kitchen");
+
+export default async function HomePage() {
+  const flashDeals = await getProductsByTag("flash-deal");
+  const bestSellers = await getProductsByTag("best-seller");
+  const electronics = await getProductsByCategory("electronics");
+  const home = await getProductsByCategory("home-kitchen");
+
   return (
     <>
       <Hero />
