@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Menu, Search, ShoppingCart, Heart, User, LogOut } from "lucide-react";
+import { Menu, Search, ShoppingCart, Heart, User, LogOut, Store } from "lucide-react";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { CategoryNav } from "./CategoryNav";
 import { MobileMenu } from "./MobileMenu";
@@ -45,6 +45,11 @@ export function Header({ user }: { user: SessionPayload | null }) {
             <div className="ml-auto flex items-center gap-1 md:gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
+                  {user.role === "VENDOR" && (
+                    <Link href="/vendor" className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-primary hover:text-primary-hover bg-primary/10 rounded">
+                      <Store size={18} /> Vendor Portal
+                    </Link>
+                  )}
                   <Link href="/account" className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-charcoal hover:text-primary">
                     <User size={18} /> Hi, {user.name.split(" ")[0]}
                   </Link>
