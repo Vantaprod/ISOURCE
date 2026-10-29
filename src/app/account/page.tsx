@@ -1,13 +1,18 @@
 import Link from "next/link";
-import { Package, AlertTriangle, User, MapPin, Settings } from "lucide-react";
+import { Package, User, MapPin, Settings, LogOut } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatNairaShort } from "@/lib/format";
+import { getSession } from "@/lib/session";
+import { redirect } from "next/navigation";
+import { logoutAction } from "@/app/actions/auth";
 
 export default async function AccountPage() {
-  // Fetch latest orders for demo purposes (in production, filter by logged-in user ID)
-  const recentOrders = await prisma.order.findMany({
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const userOrders = await prisma.order.findMany({
+    where: { userId: session.userId },
     orderBy: { createdAt: "desc" },
-    take: 5,
     include: { items: true },
   });
 
@@ -15,19 +20,14 @@ export default async function AccountPage() {
     <div className="mx-auto max-w-[1440px] px-4 py-6 md:py-10">
       <h1 className="text-2xl md:text-3xl font-bold mb-4">My Account</h1>
 
-      <div className="rounded-md border border-warning/30 bg-warning/10 p-3 mb-6 text-xs text-charcoal flex gap-2">
-        <AlertTriangle size={16} className="text-warning flex-shrink-0 mt-0.5" />
-        <div><strong className="text-warning">Demo profile:</strong> Real authentication is not configured yet. The order list below shows the most recent orders placed across the site.</div>
-      </div>
-
       <div className="grid md:grid-cols-[240px_1fr] gap-6">
         <aside>
           <nav className="rounded-lg border border-border bg-white overflow-hidden">
-            <div className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left border-l-2 border-transparent text-charcoal hover:bg-surface cursor-not-allowed opacity-50">
-              <User size={16} /> Profile (coming soon)
-            </div>
             <div className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left border-l-2 border-primary bg-primary/5 text-primary font-semibold">
               <Package size={16} /> Orders
+            </div>
+            <div className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left border-l-2 border-transparent text-charcoal hover:bg-surface cursor-not-allowed opacity-50">
+              <User size={16} /> Profile (coming soon)
             </div>
             <div className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left border-l-2 border-transparent text-charcoal hover:bg-surface cursor-not-allowed opacity-50">
               <MapPin size={16} /> Addresses
@@ -35,18 +35,26 @@ export default async function AccountPage() {
             <div className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left border-l-2 border-transparent text-charcoal hover:bg-surface cursor-not-allowed opacity-50">
               <Settings size={16} /> Settings
             </div>
-            <div className="border-t border-border">
+            <div className="border-t border-border mt-2 pt-2">
               <Link href="/wishlist" className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left text-charcoal hover:bg-surface">
                 My Wishlist
               </Link>
+              <form action={logoutAction}>
+                <button type="submit" className="w-full flex items-center gap-2 px-4 py-3 text-sm text-left text-danger hover:bg-danger/5">
+                  <LogOut size={16} /> Log out
+                </button>
+              </form>
             </div>
           </nav>
         </aside>
 
         <main className="space-y-4">
-          <h2 className="text-xl font-bold">Recent Orders</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">Recent Orders</h2>
+            <p className="text-sm text-muted">{session.email}</p>
+          </div>
           
-          {recentOrders.length === 0 ? (
+          {userOrders.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border p-10 text-center">
               <Package className="mx-auto text-muted mb-3" size={32} />
               <p className="text-charcoal font-medium">No orders yet</p>
@@ -55,7 +63,7 @@ export default async function AccountPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {recentOrders.map((order) => (
+              {userOrders.map((order) => (
                 <div key={order.id} className="rounded-lg border border-border bg-white overflow-hidden">
                   <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-2">
                     <div>

@@ -5,6 +5,7 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { getSession } from "@/lib/session";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
@@ -13,13 +14,15 @@ export const metadata: Metadata = {
   description: "Shop electronics, phones, solar, home, groceries, fashion and more on Isource — Nigeria's trusted multi-vendor marketplace.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await getSession();
+
   return (
     <html lang="en" className={inter.variable}>
       <body className="min-h-screen flex flex-col bg-white">
         <CartProvider>
           <WishlistProvider>
-            <Header />
+            <Header user={session} />
             <main className="flex-1">{children}</main>
             <Footer />
           </WishlistProvider>

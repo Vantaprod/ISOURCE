@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema, deliveryFeeKobo, type CheckoutFormData } from "@/lib/checkout-schema";
+import { getSession } from "@/lib/session";
 import type { PaymentProvider } from "@prisma/client";
 
 interface CartLine {
@@ -11,18 +12,12 @@ interface CartLine {
 }
 
 export async function placeOrder(formData: CheckoutFormData, cartItems: CartLine[]) {
-  // 1. Validate form data again on the server
+  const session = await getSession();
   const parsed = checkoutSchema.safeParse(formData);
-  if (!parsed.success) {
-    return { success: false, error: "Invalid form data" };
-  }
-
-  if (!cartItems || cartItems.length === 0) {
-    return { success: false, error: "Your cart is empty" };
-  }
+  if (!parsed.success) return { success: false, error: "Invalid form data" };
+  if (!cartItems || cartItems.length === 0) return { success: false, error: "Your cart is empty" };
 
   try {
-    // 2. Fetch products from DB to verify price & stock
     const productIds = cartItems.map((i) => i.productId);
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
@@ -48,9 +43,7 @@ export async function placeOrder(formData: CheckoutFormData, cartItems: CartLine
         variantLabel = variant.label;
       }
 
-      if (stock < item.qty) {
-        throw new Error(`Not enough stock for ${product.name}`);
-      }
+      if (stock < item.qty) throw new Error(`Not enough stock for ${product.name}`);
 
       const lineTotalKobo = unitKobo * item.qty;
       subtotalKobo += lineTotalKobo;
@@ -71,11 +64,8 @@ export async function placeOrder(formData: CheckoutFormData, cartItems: CartLine
 
     const deliveryKobo = deliveryFeeKobo(parsed.data.deliveryMethod, subtotalKobo);
     const totalKobo = subtotalKobo + deliveryKobo;
-    
-    // Generate a short order number like IS-12345678
     const orderNumber = `IS-${Date.now().toString().slice(-8)}`;
 
-    // Map string payment method to Prisma enum
     const paymentMethodMap: Record<string, PaymentProvider> = {
       "paystack": "PAYSTACK",
       "flutterwave": "FLUTTERWAVE",
@@ -83,12 +73,12 @@ export async function placeOrder(formData: CheckoutFormData, cartItems: CartLine
       "pay-on-delivery": "PAY_ON_DELIVERY",
     };
 
-    // 3. Create the order in a single atomic transaction
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        guestEmail: parsed.data.email,
-        guestPhone: parsed.data.phone,
+        userId: session?.userId || null,
+        guestEmail: session ? null : parsed.data.email,
+        guestPhone: session ? null : parsed.data.phone,
         status: "PENDING",
         paymentStatus: "PENDING",
         shippingFirstName: parsed.data.firstName,
@@ -103,9 +93,7 @@ export async function placeOrder(formData: CheckoutFormData, cartItems: CartLine
         subtotalKobo,
         deliveryKobo,
         totalKobo,
-        items: {
-          create: orderItemsData,
-        },
+        items: { create: orderItemsData },
       },
     });
 

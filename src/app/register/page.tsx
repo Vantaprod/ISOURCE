@@ -1,28 +1,11 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useActionState } from "react";
 import { Lock, Mail, User, Phone, AlertTriangle } from "lucide-react";
-import { registerSchema, type RegisterFormData } from "@/lib/auth-schema";
+import { registerAction } from "@/app/actions/auth";
 
 export default function RegisterPage() {
-  const [form, setForm] = useState<RegisterFormData>({ firstName: "", lastName: "", email: "", phone: "", password: "" });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [boundaryHit, setBoundaryHit] = useState(false);
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const parsed = registerSchema.safeParse(form);
-    if (!parsed.success) {
-      const errs: Record<string, string> = {};
-      for (const issue of parsed.error.issues) {
-        const key = String(issue.path[0] ?? "_form");
-        if (!errs[key]) errs[key] = issue.message;
-      }
-      setErrors(errs);
-      return;
-    }
-    setBoundaryHit(true);
-  }
+  const [state, formAction, isPending] = useActionState(registerAction, null);
 
   return (
     <div className="mx-auto max-w-[420px] px-4 py-12 md:py-20">
@@ -31,35 +14,27 @@ export default function RegisterPage() {
         <p className="text-sm text-muted mt-1">Join Isource to start shopping</p>
       </div>
 
-      <div className="rounded-md border border-warning/30 bg-warning/10 p-3 mb-6 text-xs text-charcoal flex gap-2">
-        <AlertTriangle size={16} className="text-warning flex-shrink-0 mt-0.5" />
-        <div><strong className="text-warning">Demo UI:</strong> Auth backend is not configured. Submitting will not create an account.</div>
-      </div>
-
-      {boundaryHit && (
-        <div className="rounded-md border border-primary/30 bg-primary/5 p-4 mb-6 text-sm text-charcoal">
-          <p className="font-semibold text-primary mb-1">Registration boundary reached</p>
-          <p className="text-xs">Form validated successfully. To enable real registration, configure the database and authentication provider.</p>
+      {state?.error && (
+        <div className="rounded-md border border-danger/30 bg-danger/10 p-3 mb-6 text-sm text-danger flex items-center gap-2">
+          <AlertTriangle size={16} /> {state.error}
         </div>
       )}
 
-      <form onSubmit={onSubmit} noValidate className="space-y-4">
+      <form action={formAction} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium mb-1">First name</label>
             <div className="relative">
               <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input type="text" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className={`h-10 w-full rounded border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary ${errors.firstName ? "border-danger" : "border-border"}`} />
+              <input name="firstName" type="text" required className="h-10 w-full rounded border border-border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary" />
             </div>
-            {errors.firstName && <p className="text-xs text-danger mt-1">{errors.firstName}</p>}
           </div>
           <div>
             <label className="block text-xs font-medium mb-1">Last name</label>
             <div className="relative">
               <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <input type="text" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className={`h-10 w-full rounded border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary ${errors.lastName ? "border-danger" : "border-border"}`} />
+              <input name="lastName" type="text" required className="h-10 w-full rounded border border-border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary" />
             </div>
-            {errors.lastName && <p className="text-xs text-danger mt-1">{errors.lastName}</p>}
           </div>
         </div>
 
@@ -67,31 +42,28 @@ export default function RegisterPage() {
           <label className="block text-xs font-medium mb-1">Email</label>
           <div className="relative">
             <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={`h-10 w-full rounded border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary ${errors.email ? "border-danger" : "border-border"}`} placeholder="you@example.com" />
+            <input name="email" type="email" required className="h-10 w-full rounded border border-border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary" placeholder="you@example.com" />
           </div>
-          {errors.email && <p className="text-xs text-danger mt-1">{errors.email}</p>}
         </div>
 
         <div>
           <label className="block text-xs font-medium mb-1">Phone number</label>
           <div className="relative">
             <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={`h-10 w-full rounded border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary ${errors.phone ? "border-danger" : "border-border"}`} placeholder="08012345678" />
+            <input name="phone" type="tel" required className="h-10 w-full rounded border border-border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary" placeholder="08012345678" />
           </div>
-          {errors.phone && <p className="text-xs text-danger mt-1">{errors.phone}</p>}
         </div>
 
         <div>
           <label className="block text-xs font-medium mb-1">Password</label>
           <div className="relative">
             <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={`h-10 w-full rounded border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary ${errors.password ? "border-danger" : "border-border"}`} placeholder="At least 8 characters" />
+            <input name="password" type="password" required className="h-10 w-full rounded border border-border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary" placeholder="At least 8 characters" />
           </div>
-          {errors.password && <p className="text-xs text-danger mt-1">{errors.password}</p>}
         </div>
 
-        <button type="submit" className="w-full h-11 rounded bg-primary text-white text-sm font-semibold hover:bg-primary-hover">
-          Create account
+        <button type="submit" disabled={isPending} className="w-full h-11 rounded bg-primary text-white text-sm font-semibold hover:bg-primary-hover disabled:opacity-70 disabled:cursor-not-allowed">
+          {isPending ? "Creating account..." : "Create account"}
         </button>
 
         <p className="text-center text-xs text-muted pt-2">
