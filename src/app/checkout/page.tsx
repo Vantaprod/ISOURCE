@@ -5,15 +5,14 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ChevronLeft, Lock, AlertTriangle } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { PRODUCTS } from "@/data/products";
+import { PRODUCTS } from "@/data/products"; // Keep for detailed display, but server uses DB
 import { formatNairaShort } from "@/lib/format";
 import {
   checkoutSchema, NIGERIAN_STATES, DELIVERY_LABELS, DELIVERY_METHODS,
   PAYMENT_LABELS, PAYMENT_METHODS, deliveryFeeKobo,
-  type CheckoutFormData, type OrderDraft,
+  type CheckoutFormData
 } from "@/lib/checkout-schema";
-
-const DRAFT_KEY = "isource.order-draft.v1";
+import { placeOrder } from "./actions";
 
 const initialForm: CheckoutFormData = {
   email: "",
@@ -35,6 +34,7 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  // Build detailed items for display (server will re-validate prices)
   const detailed = useMemo(() => {
     return lines.flatMap((line) => {
       const product = PRODUCTS.find((p) => p.id === line.productId);
@@ -70,7 +70,7 @@ export default function CheckoutPage() {
     });
   }
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submitting) return;
 
@@ -91,35 +91,30 @@ export default function CheckoutPage() {
       return;
     }
 
-    const orderNumber = `IS-${Date.now().toString().slice(-8)}`;
-    const draft: OrderDraft = {
-      orderNumber,
-      createdAt: new Date().toISOString(),
-      form: parsed.data,
-      items: detailed.map((l) => ({
-        productId: l.productId, variantId: l.variantId, name: l.name,
-        variantLabel: l.variantLabel, unitKobo: l.unitKobo, qty: l.qty, lineTotalKobo: l.lineTotalKobo,
-      })),
-      subtotalKobo, deliveryKobo, totalKobo,
-    };
-
-    try {
-      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    } catch {
-      setErrors({ _form: "Could not save order. Please try again." });
-      return;
-    }
-
     setSubmitting(true);
-    router.push("/checkout/confirmation");
-    clear();
+    
+    // Call server action
+    const result = await placeOrder(form, lines);
+
+    if (result.success && result.orderNumber) {
+      clear(); // wipe cart
+      router.push(`/checkout/confirmation/${result.orderNumber}`);
+    } else {
+      setErrors({ _form: result.error || "Failed to place order." });
+      setSubmitting(false);
+    }
   }
 
   if (!ready) {
     return <div className="mx-auto max-w-[1440px] px-4 py-16 text-sm text-muted">Loading checkout…</div>;
   }
   if (submitting) {
-    return <div className="mx-auto max-w-[1440px] px-4 py-16 text-sm text-muted">Finalising your order…</div>;
+    return (
+      <div className="mx-auto max-w-[1440px] px-4 py-16 flex flex-col items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mb-4"></div>
+        <p className="text-sm text-muted">Processing your order securely…</p>
+      </div>
+    );
   }
   if (detailed.length === 0) {
     return (
@@ -141,7 +136,7 @@ export default function CheckoutPage() {
       <div className="rounded-md border border-warning/30 bg-warning/10 p-3 mb-6 text-xs text-charcoal flex gap-2">
         <AlertTriangle size={16} className="text-warning flex-shrink-0 mt-0.5" />
         <div>
-          <strong className="text-warning">Demo checkout:</strong> This form validates your details and saves a draft order in your browser session. No payment is processed. Real payment, order persistence and vendor settlement require a configured database and payment provider.
+          <strong className="text-warning">Demo checkout:</strong> This form saves a real draft order to the database. Real payment processing is not configured.
         </div>
       </div>
 
@@ -256,7 +251,7 @@ export default function CheckoutPage() {
               </dl>
               <div className="p-4 border-t border-border">
                 {errors._form && <p className="text-xs text-danger mb-2">{errors._form}</p>}
-                <button type="submit" className="w-full h-11 rounded bg-primary text-white text-sm font-semibold hover:bg-primary-hover">
+                <button type="submit" disabled={submitting} className="w-full h-11 rounded bg-primary text-white text-sm font-semibold hover:bg-primary-hover disabled:opacity-70 disabled:cursor-not-allowed">
                   Place order (demo)
                 </button>
                 <p className="text-[10px] text-muted text-center mt-2">No charge will be made. See demo notice above.</p>
