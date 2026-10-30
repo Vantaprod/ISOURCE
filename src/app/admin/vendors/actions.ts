@@ -10,8 +10,7 @@ export async function updateVendorStatus(vendorId: string, status: VendorStatus)
 
   await prisma.vendor.update({ where: { id: vendorId }, data: { status } });
   
-  // If suspending, downgrade their role to CUSTOMER
-  if (status === "SUSPENDED") {
+  if (status === "SUSPENDED" || status === "REJECTED" || status === "CLOSED") {
     const vendor = await prisma.vendor.findUnique({ where: { id: vendorId } });
     if (vendor) {
        await prisma.user.update({ where: { id: vendor.userId }, data: { role: "CUSTOMER" } });

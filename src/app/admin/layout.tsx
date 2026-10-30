@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, ShoppingBag, Store, Users, ArrowLeft, Wallet, RotateCcw } from "lucide-react";
+import { LayoutDashboard, ShoppingBag, Store, Users, ArrowLeft, Wallet, RotateCcw, Building2 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <li><Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary font-medium"><LayoutDashboard size={18} /> Overview</Link></li>
             <li><Link href="/admin/orders" className="flex items-center gap-3 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary font-medium"><ShoppingBag size={18} /> Orders</Link></li>
             <li><Link href="/admin/vendors" className="flex items-center gap-3 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary font-medium"><Store size={18} /> Vendors</Link></li>
+            <li><Link href="/admin/brands" className="flex items-center gap-3 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary font-medium"><Building2 size={18} /> Brands</Link></li>
             <li><Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary font-medium"><Users size={18} /> Users</Link></li>
             <li><Link href="/admin/payouts" className="flex items-center gap-3 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary font-medium"><Wallet size={18} /> Payouts</Link></li>
             <li><Link href="/admin/refunds" className="flex items-center gap-3 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary font-medium"><RotateCcw size={18} /> Refunds</Link></li>
