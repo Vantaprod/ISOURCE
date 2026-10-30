@@ -4,8 +4,8 @@ import { LayoutDashboard, ShoppingBag, Heart, MapPin, Star, RotateCcw, User, Bel
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-6 md:py-8 grid md:grid-cols-[260px_1fr] gap-6">
-      <aside>
-        <nav className="rounded-xl bg-charcoal text-white overflow-hidden sticky top-24">
+      <aside className="md:sticky md:top-24 h-fit">
+        <nav className="rounded-xl bg-charcoal text-white overflow-hidden">
           <div className="p-5 border-b border-white/10">
             <h2 className="font-extrabold text-lg tracking-wide">My Account</h2>
           </div>

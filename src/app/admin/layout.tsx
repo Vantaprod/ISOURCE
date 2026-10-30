@@ -4,8 +4,8 @@ import { LayoutDashboard, ShoppingBag, Store, Users, ArrowLeft, Wallet, RotateCc
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-6 md:py-10 grid md:grid-cols-[260px_1fr] gap-6">
-      <aside>
-        <nav className="rounded-lg border border-border bg-white overflow-hidden sticky top-24">
+      <aside className="md:sticky md:top-24 h-fit">
+        <nav className="rounded-lg border border-border bg-white overflow-hidden">
           <div className="p-4 border-b border-border bg-charcoal text-white"><h2 className="font-bold text-sm tracking-wide uppercase">Admin Control</h2></div>
           <ul className="text-sm py-2">
             <li><Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary font-medium"><LayoutDashboard size={18} /> Overview</Link></li>
