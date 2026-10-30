@@ -6,15 +6,69 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserRole { CUSTOMER VENDOR BRAND ADMIN }
-enum VendorStatus { DRAFT SUBMITTED UNDER_REVIEW REQUIRES_INFORMATION APPROVED REJECTED SUSPENDED CLOSED }
-enum BrandStatus { PENDING APPROVED REJECTED SUSPENDED }
-enum MembershipRole { OWNER MANAGER STAFF }
-enum OrderStatus { PENDING CONFIRMED PROCESSING SHIPPED DELIVERED CANCELLED RETURNED }
-enum PaymentStatus { PENDING AUTHORIZED PAID FAILED REFUNDED PARTIALLY_REFUNDED }
-enum PaymentProvider { PAYSTACK FLUTTERWAVE BANK_TRANSFER PAY_ON_DELIVERY }
-enum FulfillmentStatus { PENDING PROCESSING DISPATCHED DELIVERED FAILED RETURNED }
-enum ShipmentCarrier { ISOURCE VENDOR }
+enum UserRole {
+  CUSTOMER
+  VENDOR
+  BRAND
+  ADMIN
+}
+enum VendorStatus {
+  PENDING
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  REQUIRES_INFORMATION
+  APPROVED
+  REJECTED
+  SUSPENDED
+  CLOSED
+}
+enum BrandStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+enum MembershipRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+enum PaymentProvider {
+  PAYSTACK
+  FLUTTERWAVE
+  BANK_TRANSFER
+  PAY_ON_DELIVERY
+}
+enum FulfillmentStatus {
+  PENDING
+  PROCESSING
+  DISPATCHED
+  DELIVERED
+  FAILED
+  RETURNED
+}
+enum ShipmentCarrier {
+  ISOURCE
+  VENDOR
+}
 
 model User {
   id            String    @id @default(cuid())
@@ -158,6 +212,7 @@ model Product {
   @@index([brandId])
   @@index([slug])
   @@index([stock])
+  sponsoredCampaigns SponsoredCampaign[]
 }
 
 model ProductImage {
