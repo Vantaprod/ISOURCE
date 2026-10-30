@@ -1,83 +1,97 @@
 import Link from "next/link";
-import { ShoppingBag, Users, Store, DollarSign, ArrowRight } from "lucide-react";
+import { ShoppingBag, Users, Store, DollarSign, ArrowRight, AlertCircle, TrendingUp } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatNairaShort } from "@/lib/format";
 
 export default async function AdminDashboard() {
-  const [orderCount, userCount, vendorCount, orders] = await Promise.all([
+  const [orderCount, userCount, vendorCount, pendingVendors, orders, totalRevenue] = await Promise.all([
     prisma.order.count(),
-    prisma.user.count(),
-    prisma.vendor.count(),
+    prisma.user.count({ where: { role: "CUSTOMER" } }),
+    prisma.vendor.count({ where: { status: "APPROVED" } }),
+    prisma.vendor.count({ where: { status: "PENDING" } }),
     prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 5, include: { items: true } }),
+    prisma.order.aggregate({ _sum: { totalKobo: true }, where: { paymentStatus: "PAID" } }),
   ]);
 
-  const totalRevenueKobo = await prisma.order.aggregate({
-    _sum: { totalKobo: true },
-    where: { paymentStatus: "PAID" },
-  });
+  const revenue = totalRevenue._sum.totalKobo || 0;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-sm text-muted">Overview of Isource platform activity.</p>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-charcoal">Platform Overview</h1>
+          <p className="text-sm text-muted">Real-time metrics for Isource.</p>
+        </div>
       </div>
 
+      {/* Top Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-lg border border-border bg-white p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted uppercase font-medium">Revenue</p>
-            <DollarSign size={16} className="text-success" />
+        <div className="rounded-xl border border-border bg-white p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-muted uppercase font-bold tracking-wider">Total Revenue</p>
+            <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center"><DollarSign size={16} className="text-success" /></div>
           </div>
-          <p className="text-2xl font-bold mt-2">{formatNairaShort(totalRevenueKobo._sum.totalKobo || 0)}</p>
-          <p className="text-[10px] text-muted mt-1">Paid orders only</p>
+          <p className="text-2xl font-extrabold text-charcoal">{formatNairaShort(revenue)}</p>
+          <p className="text-xs text-success mt-1 flex items-center gap-1"><TrendingUp size={12} /> From paid orders</p>
         </div>
-        <div className="rounded-lg border border-border bg-white p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted uppercase font-medium">Orders</p>
-            <ShoppingBag size={16} className="text-primary" />
+        
+        <div className="rounded-xl border border-border bg-white p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-muted uppercase font-bold tracking-wider">Total Orders</p>
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center"><ShoppingBag size={16} className="text-primary" /></div>
           </div>
-          <p className="text-2xl font-bold mt-2">{orderCount}</p>
-          <p className="text-[10px] text-muted mt-1">All time</p>
+          <p className="text-2xl font-extrabold text-charcoal">{orderCount}</p>
+          <p className="text-xs text-muted mt-1">All time</p>
         </div>
-        <div className="rounded-lg border border-border bg-white p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted uppercase font-medium">Users</p>
-            <Users size={16} className="text-charcoal" />
+
+        <div className="rounded-xl border border-border bg-white p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-muted uppercase font-bold tracking-wider">Customers</p>
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center"><Users size={16} className="text-blue-600" /></div>
           </div>
-          <p className="text-2xl font-bold mt-2">{userCount}</p>
-          <p className="text-[10px] text-muted mt-1">Registered</p>
+          <p className="text-2xl font-extrabold text-charcoal">{userCount}</p>
+          <p className="text-xs text-muted mt-1">Registered accounts</p>
         </div>
-        <div className="rounded-lg border border-border bg-white p-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted uppercase font-medium">Vendors</p>
-            <Store size={16} className="text-warning" />
+
+        <div className="rounded-xl border border-border bg-white p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-muted uppercase font-bold tracking-wider">Vendors</p>
+            <div className="h-8 w-8 rounded-full bg-warning/10 flex items-center justify-center"><Store size={16} className="text-warning" /></div>
           </div>
-          <p className="text-2xl font-bold mt-2">{vendorCount}</p>
-          <p className="text-[10px] text-muted mt-1">Active sellers</p>
+          <p className="text-2xl font-extrabold text-charcoal">{vendorCount}</p>
+          {pendingVendors > 0 ? (
+            <Link href="/admin/vendors" className="text-xs text-warning mt-1 flex items-center gap-1 hover:underline"><AlertCircle size={12} /> {pendingVendors} pending approval</Link>
+          ) : (
+            <p className="text-xs text-muted mt-1">Active stores</p>
+          )}
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-white overflow-hidden">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h2 className="font-semibold">Recent Orders</h2>
-          <Link href="/admin/orders" className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1">
-            View all <ArrowRight size={12} />
+      {/* Recent Orders */}
+      <div className="rounded-xl border border-border bg-white overflow-hidden">
+        <div className="p-5 border-b border-border flex items-center justify-between bg-surface/50">
+          <h2 className="font-bold text-charcoal">Recent Orders</h2>
+          <Link href="/admin/orders" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+            View All <ArrowRight size={14} />
           </Link>
         </div>
         {orders.length === 0 ? (
-          <p className="p-6 text-sm text-muted text-center">No orders yet.</p>
+          <p className="p-8 text-sm text-muted text-center">No orders placed yet.</p>
         ) : (
           <ul className="divide-y divide-border">
             {orders.map((o) => (
-              <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm">
+              <li key={o.id} className="flex flex-wrap items-center justify-between gap-4 p-4 hover:bg-surface/30 transition-colors">
                 <div>
-                  <p className="font-mono font-semibold">{o.orderNumber}</p>
-                  <p className="text-xs text-muted">{o.createdAt.toLocaleDateString("en-NG")} · {o.items.length} item{o.items.length === 1 ? "" : "s"}</p>
+                  <p className="font-mono font-bold text-charcoal">{o.orderNumber}</p>
+                  <p className="text-xs text-muted mt-1">{o.createdAt.toLocaleDateString("en-NG")} · {o.items.length} item{o.items.length === 1 ? "" : "s"}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold">{formatNairaShort(o.totalKobo)}</span>
-                  <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-warning/10 text-warning">{o.status}</span>
+                <div className="flex items-center gap-6">
+                  <span className="font-bold text-sm">{formatNairaShort(o.totalKobo)}</span>
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                    o.status === "PENDING" ? "bg-warning/10 text-warning" :
+                    o.status === "DELIVERED" ? "bg-success/10 text-success" :
+                    "bg-primary/10 text-primary"
+                  }`}>{o.status}</span>
                 </div>
               </li>
             ))}
