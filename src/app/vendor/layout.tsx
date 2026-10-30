@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, PlusCircle, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, PlusCircle, ArrowLeft, ShoppingBag } from "lucide-react";
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,7 +12,12 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
           <ul className="text-sm">
             <li>
               <Link href="/vendor" className="flex items-center gap-2 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary">
-                <LayoutDashboard size={16} /> My Inventory
+                <LayoutDashboard size={16} /> Dashboard & Inventory
+              </Link>
+            </li>
+            <li>
+              <Link href="/vendor/orders" className="flex items-center gap-2 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary">
+                <ShoppingBag size={16} /> My Orders
               </Link>
             </li>
             <li>

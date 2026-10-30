@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { PlusCircle, Edit, Trash2, PackageX } from "lucide-react";
+import { PlusCircle, Edit, Trash2, PackageX, DollarSign, ShoppingBag, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { formatNairaShort } from "@/lib/format";
 import { deleteProduct } from "@/app/actions/vendor";
 import { redirect } from "next/navigation";
+import { AlertTriangle } from "lucide-react";
 
 export default async function VendorDashboard() {
   const session = await getSession();
@@ -17,6 +18,22 @@ export default async function VendorDashboard() {
   });
 
   if (!vendor) return <div>Vendor profile missing. Contact support.</div>;
+
+  // If pending, show a lock screen
+  if (vendor.status === "PENDING") {
+    return (
+      <div className="rounded-xl border border-warning/30 bg-warning/5 p-10 text-center max-w-2xl mx-auto mt-10">
+        <AlertTriangle size={48} className="mx-auto text-warning mb-4" />
+        <h2 className="text-2xl font-bold text-charcoal">Application Under Review</h2>
+        <p className="text-muted mt-2">Your vendor application is currently pending approval by an administrator. You will be able to add products once approved.</p>
+      </div>
+    );
+  }
+
+  // Fetch stats
+  const orderItems = await prisma.orderItem.findMany({ where: { vendorId: vendor.id, fulfillmentStatus: { not: "PENDING" } } });
+  const totalRevenue = orderItems.reduce((sum, item) => sum + item.lineTotalKobo, 0);
+  const totalOrders = orderItems.length;
 
   return (
     <div className="space-y-6">
@@ -30,17 +47,27 @@ export default async function VendorDashboard() {
         </Link>
       </div>
 
+      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-lg border border-border bg-white p-4">
-          <p className="text-xs text-muted uppercase">Total Products</p>
-          <p className="text-2xl font-bold mt-1">{vendor.products.length}</p>
+          <div className="flex items-center gap-2 text-muted mb-2"><DollarSign size={16} /><p className="text-xs uppercase font-medium">Revenue</p></div>
+          <p className="text-2xl font-bold">{formatNairaShort(totalRevenue)}</p>
         </div>
         <div className="rounded-lg border border-border bg-white p-4">
-          <p className="text-xs text-muted uppercase">Out of Stock</p>
-          <p className="text-2xl font-bold mt-1 text-danger">{vendor.products.filter(p => p.stock <= 0).length}</p>
+          <div className="flex items-center gap-2 text-muted mb-2"><ShoppingBag size={16} /><p className="text-xs uppercase font-medium">Orders</p></div>
+          <p className="text-2xl font-bold">{totalOrders}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-white p-4">
+          <div className="flex items-center gap-2 text-muted mb-2"><PackageX size={16} /><p className="text-xs uppercase font-medium">Out of Stock</p></div>
+          <p className="text-2xl font-bold text-danger">{vendor.products.filter(p => p.stock <= 0).length}</p>
+        </div>
+        <div className="rounded-lg border border-border bg-white p-4">
+          <div className="flex items-center gap-2 text-muted mb-2"><Clock size={16} /><p className="text-xs uppercase font-medium">Total Products</p></div>
+          <p className="text-2xl font-bold">{vendor.products.length}</p>
         </div>
       </div>
 
+      {/* Product Table */}
       <div className="rounded-lg border border-border bg-white overflow-hidden">
         <div className="p-4 border-b border-border">
           <h2 className="font-semibold">Product Inventory</h2>
