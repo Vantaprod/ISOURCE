@@ -98,7 +98,7 @@ export default function CheckoutPage() {
 
     if (result.success && result.orderNumber) {
       clear(); // wipe cart
-      router.push(`/checkout/confirmation/${result.orderNumber}`);
+      if (result.redirectUrl) { window.location.href = result.redirectUrl; } else { router.push(`/checkout/confirmation/${result.orderNumber}`); }
     } else {
       setErrors({ _form: result.error || "Failed to place order." });
       setSubmitting(false);
@@ -106,13 +106,13 @@ export default function CheckoutPage() {
   }
 
   if (!ready) {
-    return <div className="mx-auto max-w-[1440px] px-4 py-16 text-sm text-muted">Loading checkout…</div>;
+    return <div className="mx-auto max-w-[1440px] px-4 py-16 text-sm text-muted">Loading checkoutâ€¦</div>;
   }
   if (submitting) {
     return (
       <div className="mx-auto max-w-[1440px] px-4 py-16 flex flex-col items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mb-4"></div>
-        <p className="text-sm text-muted">Processing your order securely…</p>
+        <p className="text-sm text-muted">Processing your order securelyâ€¦</p>
       </div>
     );
   }
@@ -175,7 +175,7 @@ export default function CheckoutPage() {
                 </Field>
               </div>
               <Field label="Delivery instructions" error={errors.instructions} hint="Optional">
-                <textarea value={form.instructions ?? ""} onChange={(e) => setField("instructions", e.target.value)} rows={2} className={textareaCls(!!errors.instructions)} placeholder="Landmark, gate code, preferred time…" />
+                <textarea value={form.instructions ?? ""} onChange={(e) => setField("instructions", e.target.value)} rows={2} className={textareaCls(!!errors.instructions)} placeholder="Landmark, gate code, preferred timeâ€¦" />
               </Field>
             </Fieldset>
 

@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { formatNairaShort } from "@/lib/format";
 import { RefundRow } from "./RefundRow";
 
 export default async function AdminRefundsPage() {
