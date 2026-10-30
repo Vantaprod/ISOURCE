@@ -1,5 +1,9 @@
 import type { Vendor } from "@/types/catalog";
+
 export const VENDORS: Vendor[] = [
+  { slug: "litharv", name: "Litharv", isIsource: false, location: "Lagos, NG" },
+  { slug: "huihang", name: "Huihang", isIsource: false, location: "Abuja, NG" },
+  { slug: "lura-energy", name: "Lura Energy", isIsource: false, location: "Lagos, NG" },
   { slug: "isource-official", name: "Isource Official", isIsource: true, location: "Lagos, NG" },
   { slug: "aurora-tech", name: "Aurora Tech Store", isIsource: false, location: "Lagos, NG" },
   { slug: "voltedge", name: "VoltEdge Power", isIsource: false, location: "Abuja, NG" },
@@ -9,4 +13,7 @@ export const VENDORS: Vendor[] = [
   { slug: "glowco", name: "GlowCo Beauty", isIsource: false, location: "Lagos, NG" },
   { slug: "urban-thread", name: "Urban Thread", isIsource: false, location: "Abuja, NG" },
 ];
-export function getVendor(slug: string): Vendor | undefined { return VENDORS.find((v) => v.slug === slug); }
+
+export function getVendor(slug: string): Vendor | undefined {
+  return VENDORS.find((v) => v.slug === slug);
+}

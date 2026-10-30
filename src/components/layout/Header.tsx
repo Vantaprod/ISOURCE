@@ -27,13 +27,7 @@ export function Header({ user }: { user: SessionPayload | null }) {
   }
 
   const handleLogout = () => {
-    startTransition(async () => {
-      try {
-        await logoutAction();
-      } catch (e) {
-        console.error("Logout error:", e);
-      }
-    });
+    startTransition(async () => { try { await logoutAction(); } catch (e) { console.error(e); } });
   };
 
   return (
@@ -41,60 +35,55 @@ export function Header({ user }: { user: SessionPayload | null }) {
       <AnnouncementBar />
       <header className="bg-white border-b border-border">
         <div className="mx-auto max-w-[1440px] px-4">
-          <div className="flex items-center gap-4 py-3">
+          <div className="flex items-center gap-6 py-4">
             <button className="md:hidden p-2 -ml-2" onClick={() => setMobileOpen(true)} aria-label="Open menu"><Menu size={22} /></button>
-            <Link href="/" className="flex-shrink-0 font-extrabold text-2xl tracking-tight leading-none"><span className="text-primary">i</span><span className="text-charcoal">source</span></Link>
             
-            <form onSubmit={submitSearch} role="search" className="hidden md:flex flex-1 max-w-2xl mx-auto">
-              <div className="flex w-full items-center h-10 rounded-lg border border-border bg-surface overflow-hidden focus-within:border-primary transition-colors">
-                <Search size={18} className="ml-3 text-muted flex-shrink-0" />
-                <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search for products, brands and more…" className="h-full flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted" aria-label="Search products" />
-                <button type="submit" aria-label="Search" className="flex h-8 w-8 flex-shrink-0 items-center justify-center m-1 rounded-md bg-primary text-white hover:bg-primary-hover"><Search size={16} /></button>
+            {/* Logo */}
+            <Link href="/" className="flex-shrink-0 font-extrabold text-3xl tracking-tight leading-none flex items-center gap-1">
+              <span className="text-primary">i</span><span className="text-charcoal">source</span>
+            </Link>
+            
+            {/* Search */}
+            <form onSubmit={submitSearch} role="search" className="hidden md:flex flex-1 max-w-3xl mx-auto">
+              <div className="flex w-full items-center h-11 rounded-md border border-border bg-surface overflow-hidden focus-within:border-primary transition-colors">
+                <Search size={18} className="ml-4 text-muted flex-shrink-0" />
+                <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search for products, brands and more..." className="h-full flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted" aria-label="Search products" />
+                <button type="submit" aria-label="Search" className="flex h-8 w-8 flex-shrink-0 items-center justify-center mr-1.5 rounded-sm bg-primary text-white hover:bg-primary-hover"><Search size={16} /></button>
               </div>
             </form>
 
-            <div className="ml-auto flex items-center gap-1 md:gap-3">
+            {/* Actions */}
+            <div className="ml-auto flex items-center gap-2 md:gap-5">
               {user ? (
-                <div className="flex items-center gap-3">
-                  {user.role === "ADMIN" && (
-                    <Link href="/admin" className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-charcoal hover:text-primary bg-surface rounded">
-                      <ShieldAlert size={18} /> Admin
-                    </Link>
-                  )}
-                  {user.role === "VENDOR" && (
-                    <Link href="/vendor" className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-primary hover:text-primary-hover bg-primary/10 rounded">
-                      <Store size={18} /> Vendor Portal
-                    </Link>
-                  )}
-                  <Link href="/account" className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-charcoal hover:text-primary">
-                    <User size={18} /> Hi, {user.name ? user.name.split(" ")[0] : "Account"}
+                <div className="flex items-center gap-4">
+                  {user.role === "ADMIN" && (<Link href="/admin" className="hidden lg:flex items-center gap-1.5 text-sm font-medium text-charcoal hover:text-primary"><ShieldAlert size={18} /> Admin</Link>)}
+                  {user.role === "VENDOR" && (<Link href="/vendor" className="hidden lg:flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-hover"><Store size={18} /> Vendor Portal</Link>)}
+                  <Link href="/account" className="hidden lg:flex flex-col text-xs hover:text-primary">
+                    <span className="text-muted">Account</span>
+                    <span className="font-medium text-charcoal truncate max-w-[80px]">{user.name.split(" ")[0]}</span>
                   </Link>
-                  <Link href="/account" className="lg:hidden flex items-center px-2 py-1 text-charcoal hover:text-primary" aria-label="Account">
-                    <User size={20} />
-                  </Link>
-                  <button onClick={handleLogout} disabled={isPending} className="hidden md:flex items-center gap-1.5 px-2 py-1 text-sm text-charcoal/70 hover:text-danger transition-colors disabled:opacity-50" title="Log out">
-                    <LogOut size={18} />
-                  </button>
+                  <button onClick={handleLogout} disabled={isPending} className="hidden md:flex text-charcoal/70 hover:text-danger" title="Log out"><LogOut size={20} /></button>
                 </div>
               ) : (
-                <Link href="/login" className="flex items-center gap-1.5 px-2 py-1 text-sm font-medium hover:text-primary">
-                  <User size={20} /> <span className="hidden lg:inline">Login</span>
+                <Link href="/login" className="flex items-center gap-2 text-sm font-medium hover:text-primary">
+                  <User size={20} /> <span className="hidden lg:inline">Account</span>
                 </Link>
               )}
               
-              <Link href="/wishlist" className="relative hidden md:flex items-center gap-2 px-2 py-1 text-sm hover:text-primary" aria-label="Wishlist">
+              <Link href="/wishlist" className="relative flex items-center gap-2 text-sm hover:text-primary">
                 <Heart size={20} /><span className="hidden lg:inline">Wishlist</span>
-                {wishCount > 0 && (<span className="absolute -top-1 -right-1 min-w-[18px] rounded-full bg-charcoal text-white text-[10px] leading-[18px] text-center font-bold px-1">{wishCount}</span>)}
+                {wishCount > 0 && (<span className="absolute -top-2 -right-2 min-w-[16px] h-4 rounded-full bg-charcoal text-white text-[10px] flex items-center justify-center font-bold px-1">{wishCount}</span>)}
               </Link>
-              <Link href="/cart" className="relative flex items-center gap-2 px-2 py-1 text-sm hover:text-primary" aria-label="Cart">
+              
+              <Link href="/cart" className="relative flex items-center gap-2 text-sm hover:text-primary">
                 <ShoppingCart size={20} /><span className="hidden lg:inline">Cart</span>
-                {itemCount > 0 && (<span className="absolute -top-1 -right-1 min-w-[18px] rounded-full bg-primary text-white text-[10px] leading-[18px] text-center font-bold px-1">{itemCount}</span>)}
+                {itemCount > 0 && (<span className="absolute -top-2 -right-2 min-w-[16px] h-4 rounded-full bg-primary text-white text-[10px] flex items-center justify-center font-bold px-1">{itemCount}</span>)}
               </Link>
             </div>
           </div>
-          <form onSubmit={submitSearch} role="search" className="md:hidden pb-3">
-            <div className="flex items-center h-10 rounded-lg border border-border bg-surface overflow-hidden focus-within:border-primary">
-              <Search size={18} className="ml-3 text-muted" /><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products" className="h-full flex-1 bg-transparent px-2 text-sm outline-none" aria-label="Search products" /><button type="submit" aria-label="Search" className="flex h-8 w-8 items-center justify-center m-1 rounded-md bg-primary text-white"><Search size={16} /></button>
+          <form onSubmit={submitSearch} role="search" className="md:hidden pb-4">
+            <div className="flex items-center h-10 rounded-md border border-border bg-surface overflow-hidden focus-within:border-primary">
+              <Search size={18} className="ml-3 text-muted" /><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search products" className="h-full flex-1 bg-transparent px-2 text-sm outline-none" aria-label="Search products" /><button type="submit" aria-label="Search" className="flex h-8 w-8 items-center justify-center m-1 rounded-sm bg-primary text-white"><Search size={16} /></button>
             </div>
           </form>
         </div>
