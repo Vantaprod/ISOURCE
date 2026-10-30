@@ -5,8 +5,9 @@ import { formatNairaShort } from "@/lib/format";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
+import { RequestRefundButton } from "./RequestRefundButton";
 
-type OrderWithItems = Awaited<ReturnType<typeof prisma.order.findMany<{ include: { items: true } }>>>[number];
+type OrderWithItems = Awaited<ReturnType<typeof prisma.order.findMany<{ include: { items: true, refunds: true } }>>>[number];
 
 export default async function AccountPage() {
   const session = await getSession();
@@ -17,7 +18,7 @@ export default async function AccountPage() {
     userOrders = await prisma.order.findMany({
       where: { userId: session.userId },
       orderBy: { createdAt: "desc" },
-      include: { items: true },
+      include: { items: true, refunds: true },
     });
   } catch (e) {
     console.error("Failed to fetch user orders:", e);
@@ -70,35 +71,48 @@ export default async function AccountPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {userOrders.map((order) => (
-                <div key={order.id} className="rounded-lg border border-border bg-white overflow-hidden">
-                  <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <p className="font-mono font-semibold text-charcoal text-sm">#{order.orderNumber}</p>
-                      <p className="text-xs text-muted mt-0.5">{order.createdAt.toLocaleDateString("en-NG", { dateStyle: "medium", timeStyle: "short" })}</p>
+              {userOrders.map((order) => {
+                const hasRefund = order.refunds.length > 0;
+                const isDelivered = order.status === "DELIVERED";
+                const canRefund = isDelivered && !hasRefund;
+
+                return (
+                  <div key={order.id} className="rounded-lg border border-border bg-white overflow-hidden">
+                    <div className="p-4 border-b border-border flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="font-mono font-semibold text-charcoal text-sm">#{order.orderNumber}</p>
+                        <p className="text-xs text-muted mt-0.5">{order.createdAt.toLocaleDateString("en-NG", { dateStyle: "medium" })}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          order.paymentStatus === "PAID" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+                        }`}>
+                          {order.paymentStatus === "PAID" ? "Paid" : "Pending Payment"}
+                        </span>
+                        {hasRefund && <span className="inline-flex items-center rounded-full bg-danger/10 text-danger px-2.5 py-1 text-xs font-semibold">Refund Requested</span>}
+                      </div>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-warning/10 text-warning px-2.5 py-1 text-xs font-semibold">Not paid (demo)</span>
-                  </div>
-                  <ul className="divide-y divide-border">
-                    {order.items.map((it) => (
-                      <li key={it.id} className="flex items-center justify-between gap-3 p-3 text-sm">
-                        <div className="min-w-0">
-                          <p className="text-charcoal line-clamp-1">{it.productName}</p>
-                          <p className="text-xs text-muted">Qty {it.qty}{it.variantLabel ? ` · ${it.variantLabel}` : ""}</p>
-                        </div>
-                        <p className="font-semibold whitespace-nowrap">{formatNairaShort(it.lineTotalKobo)}</p>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="p-4 border-t border-border flex flex-wrap items-center justify-between text-sm font-semibold bg-surface">
-                    <span>Total</span>
-                    <div className="flex items-center gap-4">
-                      <span>{formatNairaShort(order.totalKobo)}</span>
-                      <Link href={`/checkout/confirmation/${order.orderNumber}`} className="text-primary hover:underline text-xs font-medium">View receipt</Link>
+                    <ul className="divide-y divide-border">
+                      {order.items.map((it) => (
+                        <li key={it.id} className="flex items-center justify-between gap-3 p-3 text-sm">
+                          <div className="min-w-0">
+                            <p className="text-charcoal line-clamp-1">{it.productName}</p>
+                            <p className="text-xs text-muted">Qty {it.qty}{it.variantLabel ? ` · ${it.variantLabel}` : ""}</p>
+                          </div>
+                          <p className="font-semibold whitespace-nowrap">{formatNairaShort(it.lineTotalKobo)}</p>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="p-4 border-t border-border flex flex-wrap items-center justify-between text-sm bg-surface">
+                      <div className="flex items-center gap-4">
+                        <span className="font-semibold">Total: {formatNairaShort(order.totalKobo)}</span>
+                        <Link href={`/checkout/confirmation/${order.orderNumber}`} className="text-primary hover:underline text-xs font-medium">View receipt</Link>
+                      </div>
+                      {canRefund && <RequestRefundButton orderId={order.id} />}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </main>

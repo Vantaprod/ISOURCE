@@ -3,6 +3,7 @@ import { useState, useTransition } from "react";
 import { updateOrderStatus } from "./actions";
 import type { OrderStatus } from "@prisma/client";
 import { formatNairaShort } from "@/lib/format";
+import { CreateShipmentModal } from "./CreateShipmentModal";
 
 const STATUSES: OrderStatus[] = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "RETURNED"];
 
@@ -35,7 +36,10 @@ export function OrderRow({ order }: { order: { id: string; orderNumber: string; 
         </select>
       </td>
       <td className="px-4 py-3 text-right">
-        <a href={`/checkout/confirmation/${order.orderNumber}`} className="text-xs text-primary hover:underline">View</a>
+        <div className="flex items-center justify-end gap-2">
+          <CreateShipmentModal orderId={order.id} />
+          <a href={`/checkout/confirmation/${order.orderNumber}`} className="text-xs text-primary hover:underline">View</a>
+        </div>
       </td>
     </tr>
   );
