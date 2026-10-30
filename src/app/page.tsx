@@ -23,6 +23,12 @@ export default async function HomePage() {
   ]);
 
   const hero = banners[0];
+  // Active campaign (theme banner)
+  const activeCampaign = await prisma.campaign.findFirst({
+    where: { isActive: true, startDate: { lte: new Date() }, endDate: { gte: new Date() } },
+    include: { banner: true },
+    orderBy: { startDate: "desc" },
+  });
   const flashDeals = await getProductsByTag("flash-deal");
   const bestSellers = await getProductsByTag("best-seller");
   const solarProducts = await getProductsByCategory("solar-power");
@@ -30,7 +36,11 @@ export default async function HomePage() {
   return (
     <>
       {/* Dynamic Hero or fallback */}
-      <section className="bg-white">
+            {activeCampaign && (
+        <div className="bg-charcoal text-white text-center py-2 text-xs font-semibold" style={{ background: activeCampaign.themeColor }}>
+          🎉 {activeCampaign.name} {activeCampaign.description && `— ${activeCampaign.description}`}
+        </div>
+      )}<section className="bg-white">
         <div className="mx-auto max-w-[1440px] px-4 pt-4 md:pt-6">
           <div className="grid lg:grid-cols-[1fr_300px] gap-4">
             <div className="relative rounded-xl overflow-hidden bg-cream flex flex-col md:flex-row items-center border border-border">
@@ -69,11 +79,11 @@ export default async function HomePage() {
         <>
           <FlashDealsSection products={flashDeals} />
           <section className="mx-auto max-w-[1440px] px-4 py-6 md:py-8">
-            <div className="flex items-end justify-between mb-4"><h2 className="text-xl font-bold">Best Sellers</h2><Link href="/search" className="text-sm text-primary hover:underline">View All →</Link></div>
+            <div className="flex items-end justify-between mb-4"><h2 className="text-xl font-bold">Best Sellers</h2><Link href="/search" className="text-sm text-primary hover:underline">View All â†’</Link></div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">{bestSellers.slice(0, 5).map(p => <ProductCard key={p.id} product={p} />)}</div>
           </section>
           <section className="mx-auto max-w-[1440px] px-4 py-6 md:py-8">
-            <div className="flex items-end justify-between mb-4"><h2 className="text-xl font-bold">Top Solar & Power</h2><Link href="/category/solar-power" className="text-sm text-primary hover:underline">View All →</Link></div>
+            <div className="flex items-end justify-between mb-4"><h2 className="text-xl font-bold">Top Solar & Power</h2><Link href="/category/solar-power" className="text-sm text-primary hover:underline">View All â†’</Link></div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">{solarProducts.slice(0, 5).map(p => <ProductCard key={p.id} product={p} />)}</div>
           </section>
         </>
@@ -83,7 +93,7 @@ export default async function HomePage() {
           if (s.type === "BEST_SELLERS") {
             return (
               <section key={s.id} className="mx-auto max-w-[1440px] px-4 py-6 md:py-8">
-                <div className="flex items-end justify-between mb-4"><div><h2 className="text-xl font-bold">{s.title}</h2>{s.subtitle && <p className="text-sm text-muted">{s.subtitle}</p>}</div><Link href="/search" className="text-sm text-primary hover:underline">View All →</Link></div>
+                <div className="flex items-end justify-between mb-4"><div><h2 className="text-xl font-bold">{s.title}</h2>{s.subtitle && <p className="text-sm text-muted">{s.subtitle}</p>}</div><Link href="/search" className="text-sm text-primary hover:underline">View All â†’</Link></div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">{bestSellers.slice(0, 5).map(p => <ProductCard key={p.id} product={p} />)}</div>
               </section>
             );
