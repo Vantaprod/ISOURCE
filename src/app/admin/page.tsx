@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShoppingBag, Users, Store, DollarSign, ArrowRight, AlertCircle, TrendingUp, Building2 } from "lucide-react";
+import { ShoppingBag, Users, Store, DollarSign, ArrowRight, AlertCircle, Building2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatNairaShort } from "@/lib/format";
 

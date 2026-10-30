@@ -488,7 +488,7 @@ model HomepageSection {
   @@index([isVisible, position])
 }
 // ============================================================
-// LAYER 3 â€” Collections & Campaigns
+// LAYER 3 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Collections & Campaigns
 // ============================================================
 
 model Collection {
@@ -518,4 +518,38 @@ model Campaign {
   updatedAt   DateTime @updatedAt
   banner      HeroBanner? @relation(fields: [bannerId], references: [id])
   @@index([isActive, startDate, endDate])
+}
+// ============================================================
+// LAYER 3 â€” Product Ranking & Sponsored Products
+// ============================================================
+
+model RankingConfig {
+  id                 String   @id @default("singleton")
+  relevanceWeight    Float    @default(30)
+  salesWeight        Float    @default(25)
+  conversionWeight   Float    @default(10)
+  ratingWeight       Float    @default(15)
+  stockWeight        Float    @default(10)
+  deliveryWeight     Float    @default(5)
+  completenessWeight Float    @default(5)
+  updatedAt          DateTime @updatedAt
+}
+
+model SponsoredCampaign {
+  id          String   @id @default(cuid())
+  productId   String
+  budgetKobo  Int      @default(0)
+  spendKobo   Int      @default(0)
+  costPerClickKobo Int @default(50)
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0)
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@index([isActive, startDate, endDate])
+  @@index([productId])
 }

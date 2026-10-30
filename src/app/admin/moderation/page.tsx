@@ -1,7 +1,4 @@
-import Link from "next/link";
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
-import { formatNairaShort } from "@/lib/format";
 import { ModerationRow } from "./ModerationRow";
 
 export default async function AdminModerationPage() {

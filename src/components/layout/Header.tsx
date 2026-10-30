@@ -15,7 +15,7 @@ export function Header({ user }: { user: SessionPayload | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [showMenu, setShowMenu] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const { itemCount } = useCart();
   const { count: wishCount } = useWishlist();
   const router = useRouter();

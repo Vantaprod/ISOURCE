@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { BannerForm } from "./BannerForm";
 import { BannerRow } from "./BannerRow";
