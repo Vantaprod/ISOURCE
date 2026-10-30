@@ -6,11 +6,15 @@ const secretKey = process.env.AUTH_SECRET || "default-secret-change-me-in-produc
 const key = new TextEncoder().encode(secretKey);
 const SESSION_COOKIE = "isource_session";
 
+export type Workspace = { id: string; type: "CUSTOMER" | "VENDOR" | "BRAND"; name: string };
+
 export type SessionPayload = {
   userId: string;
   email: string;
   name: string;
   role: string;
+  workspaces: Workspace[];
+  activeWorkspaceId?: string;
   expiresAt: Date;
 };
 
@@ -24,27 +28,16 @@ export async function encrypt(payload: SessionPayload) {
 
 export async function decrypt(session: string | undefined = "") {
   try {
-    const { payload } = await jwtVerify(session, key, {
-      algorithms: ["HS256"],
-    });
+    const { payload } = await jwtVerify(session, key, { algorithms: ["HS256"] });
     return payload as unknown as SessionPayload;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 export async function createSession(payload: Omit<SessionPayload, "expiresAt">) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const session = await encrypt({ ...payload, expiresAt });
   const cookieStore = await cookies();
-
-  cookieStore.set(SESSION_COOKIE, session, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    expires: expiresAt,
-    sameSite: "lax",
-    path: "/",
-  });
+  cookieStore.set(SESSION_COOKIE, session, { httpOnly: true, secure: process.env.NODE_ENV === "production", expires: expiresAt, sameSite: "lax", path: "/" });
 }
 
 export async function deleteSession() {

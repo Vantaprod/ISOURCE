@@ -6,8 +6,10 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserRole { CUSTOMER VENDOR ADMIN }
-enum VendorStatus { PENDING APPROVED SUSPENDED }
+enum UserRole { CUSTOMER VENDOR BRAND ADMIN }
+enum VendorStatus { DRAFT SUBMITTED UNDER_REVIEW REQUIRES_INFORMATION APPROVED REJECTED SUSPENDED CLOSED }
+enum BrandStatus { PENDING APPROVED REJECTED SUSPENDED }
+enum MembershipRole { OWNER MANAGER STAFF }
 enum OrderStatus { PENDING CONFIRMED PROCESSING SHIPPED DELIVERED CANCELLED RETURNED }
 enum PaymentStatus { PENDING AUTHORIZED PAID FAILED REFUNDED PARTIALLY_REFUNDED }
 enum PaymentProvider { PAYSTACK FLUTTERWAVE BANK_TRANSFER PAY_ON_DELIVERY }
@@ -22,6 +24,7 @@ model User {
   name          String?
   phone         String?
   role          UserRole  @default(CUSTOMER)
+  avatarUrl     String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   addresses     Address[]
@@ -29,7 +32,57 @@ model User {
   orders        Order[]
   reviews       ProductReview[]
   vendor        Vendor?
+  brands        Brand[]
+  memberships   Membership[]
+  notifications Notification[]
   @@index([email])
+}
+
+model Brand {
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  description     String?
+  logoUrl         String?
+  website         String?
+  status          BrandStatus @default(PENDING)
+  ownerId         String
+  verificationDoc String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  owner           User        @relation(fields: [ownerId], references: [id])
+  products        Product[]
+  memberships     Membership[]
+}
+
+model Membership {
+  id         String         @id @default(cuid())
+  userId     String
+  vendorId   String?
+  brandId    String?
+  role       MembershipRole @default(STAFF)
+  invitedBy  String?
+  acceptedAt DateTime?
+  createdAt  DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor     Vendor?        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  brand      Brand?         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([vendorId])
+  @@index([brandId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ALERT
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, isRead])
 }
 
 model Vendor {
@@ -39,7 +92,7 @@ model Vendor {
   name           String
   description    String?
   logoUrl        String?
-  status         VendorStatus @default(PENDING)
+  status         VendorStatus @default(DRAFT)
   isIsource      Boolean      @default(false)
   location       String?
   commissionRate Float        @default(10)
@@ -49,6 +102,7 @@ model Vendor {
   products       Product[]
   ledgerEntries  VendorLedgerEntry[]
   payouts        Payout[]
+  memberships    Membership[]
   @@index([status])
 }
 
@@ -73,6 +127,7 @@ model Product {
   description       String
   categoryId        String
   vendorId          String
+  brandId           String?
   sku               String   @unique
   priceKobo         Int
   originalPriceKobo Int?
@@ -87,6 +142,7 @@ model Product {
   updatedAt         DateTime @updatedAt
   category          Category        @relation(fields: [categoryId], references: [id])
   vendor            Vendor          @relation(fields: [vendorId], references: [id])
+  brand             Brand?          @relation(fields: [brandId], references: [id])
   images            ProductImage[]
   variants          ProductVariant[]
   reviews           ProductReview[]
@@ -94,6 +150,7 @@ model Product {
   cartItems         CartItem[]
   @@index([categoryId, isActive])
   @@index([vendorId])
+  @@index([brandId])
   @@index([slug])
   @@index([stock])
 }
@@ -284,15 +341,11 @@ model SiteSetting {
   updatedAt DateTime @updatedAt
 }
 
-// ============================================================
-// LAYER 4: Financial Infrastructure
-// ============================================================
-
 model VendorLedgerEntry {
   id          String   @id @default(cuid())
   vendorId    String
-  type        String   // SALE, COMMISSION, PAYOUT, REFUND, ADJUSTMENT
-  amountKobo  Int      // Positive = credit to vendor; Negative = debit
+  type        String
+  amountKobo  Int
   description String
   orderId     String?
   payoutId    String?
@@ -308,8 +361,8 @@ model Payout {
   id          String    @id @default(cuid())
   vendorId    String
   amountKobo  Int
-  status      String    @default("PENDING") // PENDING, PROCESSING, PAID, FAILED
-  method      String?   // bank_transfer, paystack_transfer
+  status      String    @default("PENDING")
+  method      String?
   reference   String?   @unique
   notes       String?
   processedAt DateTime?
@@ -327,7 +380,7 @@ model Refund {
   orderItemId  String?
   amountKobo   Int
   reason       String
-  status       String    @default("REQUESTED") // REQUESTED, APPROVED, REJECTED, PROCESSED
+  status       String    @default("REQUESTED")
   requestedBy  String
   reviewedBy   String?
   adminNotes   String?
