@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decrypt } from "@/lib/session";
 
-const protectedRoutes = ["/account", "/vendor"];
+const protectedRoutes = ["/account", "/vendor", "/admin"];
 const publicRoutes = ["/login", "/register"];
 
 export async function middleware(req: NextRequest) {
@@ -17,8 +17,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
 
-  if (path.startsWith("/vendor") && session?.role !== "VENDOR") {
+  if (path.startsWith("/vendor") && session?.role !== "VENDOR" && session?.role !== "ADMIN") {
     return NextResponse.redirect(new URL("/account", req.nextUrl));
+  }
+
+  if (path.startsWith("/admin") && session?.role !== "ADMIN") {
+    return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 
   if (isPublicRoute && session?.userId) {

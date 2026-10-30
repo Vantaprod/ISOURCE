@@ -1,0 +1,39 @@
+import Link from "next/link";
+import { LayoutDashboard, ShoppingBag, Store, ArrowLeft } from "lucide-react";
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mx-auto max-w-[1440px] px-4 py-6 md:py-10 grid md:grid-cols-[240px_1fr] gap-6">
+      <aside>
+        <nav className="rounded-lg border border-border bg-white overflow-hidden sticky top-24">
+          <div className="p-4 border-b border-border bg-charcoal text-white">
+            <h2 className="font-bold text-sm">Admin Portal</h2>
+          </div>
+          <ul className="text-sm">
+            <li>
+              <Link href="/admin" className="flex items-center gap-2 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary">
+                <LayoutDashboard size={16} /> Dashboard
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/orders" className="flex items-center gap-2 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary">
+                <ShoppingBag size={16} /> Orders
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/vendors" className="flex items-center gap-2 px-4 py-3 text-charcoal hover:bg-surface border-l-2 border-transparent hover:border-primary">
+                <Store size={16} /> Vendors
+              </Link>
+            </li>
+          </ul>
+          <div className="border-t border-border p-2">
+            <Link href="/" className="flex items-center gap-2 px-2 py-2 text-xs text-muted hover:text-primary">
+              <ArrowLeft size={14} /> Back to Store
+            </Link>
+          </div>
+        </nav>
+      </aside>
+      <main>{children}</main>
+    </div>
+  );
+}

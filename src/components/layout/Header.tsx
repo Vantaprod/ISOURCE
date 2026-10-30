@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Menu, Search, ShoppingCart, Heart, User, LogOut, Store } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Menu, Search, ShoppingCart, Heart, User, LogOut, Store, ShieldAlert } from "lucide-react";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { CategoryNav } from "./CategoryNav";
 import { MobileMenu } from "./MobileMenu";
@@ -14,6 +14,7 @@ import type { SessionPayload } from "@/lib/session";
 export function Header({ user }: { user: SessionPayload | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
   const { itemCount } = useCart();
   const { count: wishCount } = useWishlist();
   const router = useRouter();
@@ -24,6 +25,16 @@ export function Header({ user }: { user: SessionPayload | null }) {
     if (!q) return;
     router.push(`/search?q=${encodeURIComponent(q)}`);
   }
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      try {
+        await logoutAction();
+      } catch (e) {
+        console.error("Logout error:", e);
+      }
+    });
+  };
 
   return (
     <>
@@ -45,22 +56,25 @@ export function Header({ user }: { user: SessionPayload | null }) {
             <div className="ml-auto flex items-center gap-1 md:gap-3">
               {user ? (
                 <div className="flex items-center gap-3">
+                  {user.role === "ADMIN" && (
+                    <Link href="/admin" className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-charcoal hover:text-primary bg-surface rounded">
+                      <ShieldAlert size={18} /> Admin
+                    </Link>
+                  )}
                   {user.role === "VENDOR" && (
                     <Link href="/vendor" className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-primary hover:text-primary-hover bg-primary/10 rounded">
                       <Store size={18} /> Vendor Portal
                     </Link>
                   )}
                   <Link href="/account" className="hidden lg:flex items-center gap-1.5 px-2 py-1 text-sm font-medium text-charcoal hover:text-primary">
-                    <User size={18} /> Hi, {user.name.split(" ")[0]}
+                    <User size={18} /> Hi, {user.name ? user.name.split(" ")[0] : "Account"}
                   </Link>
                   <Link href="/account" className="lg:hidden flex items-center px-2 py-1 text-charcoal hover:text-primary" aria-label="Account">
                     <User size={20} />
                   </Link>
-                  <form action={logoutAction}>
-                    <button type="submit" className="hidden md:flex items-center gap-1.5 px-2 py-1 text-sm text-charcoal/70 hover:text-danger transition-colors" title="Log out">
-                      <LogOut size={18} />
-                    </button>
-                  </form>
+                  <button onClick={handleLogout} disabled={isPending} className="hidden md:flex items-center gap-1.5 px-2 py-1 text-sm text-charcoal/70 hover:text-danger transition-colors disabled:opacity-50" title="Log out">
+                    <LogOut size={18} />
+                  </button>
                 </div>
               ) : (
                 <Link href="/login" className="flex items-center gap-1.5 px-2 py-1 text-sm font-medium hover:text-primary">

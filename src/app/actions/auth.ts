@@ -35,7 +35,7 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
 
   } catch (err: unknown) {
     console.error("Login error:", err);
-    return { error: "An unexpected error occurred" };
+    return { error: "An unexpected error occurred during login." };
   }
 
   redirect("/account");
@@ -52,7 +52,7 @@ export async function registerAction(_prevState: unknown, formData: FormData) {
 
   const parsed = registerSchema.safeParse(rawData);
   if (!parsed.success) {
-    return { error: "Invalid input data" };
+    return { error: "Invalid input data. Check all fields." };
   }
 
   const { firstName, lastName, email, phone, password } = parsed.data;
@@ -60,7 +60,7 @@ export async function registerAction(_prevState: unknown, formData: FormData) {
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return { error: "An account with this email already exists" };
+      return { error: "An account with this email already exists." };
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -82,8 +82,10 @@ export async function registerAction(_prevState: unknown, formData: FormData) {
     });
 
   } catch (err: unknown) {
-    console.error("Register error:", err);
-    return { error: "Failed to create account" };
+    console.error("Registration error:", err);
+    // Return the actual error message to the frontend for debugging
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return { error: `Failed to create account: ${errorMessage}` };
   }
 
   redirect("/account");

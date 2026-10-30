@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useActionState } from "react";
-import { Lock, Mail, AlertTriangle } from "lucide-react";
+import { useActionState, useState } from "react";
+import { Lock, Mail, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { loginAction } from "@/app/actions/auth";
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginAction, null);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="mx-auto max-w-[420px] px-4 py-12 md:py-20">
@@ -33,12 +34,28 @@ export default function LoginPage() {
           <label className="block text-xs font-medium mb-1">Password</label>
           <div className="relative">
             <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input name="password" type="password" required className="h-10 w-full rounded border border-border pl-9 pr-3 text-sm bg-white outline-none focus:border-primary" placeholder="••••••••" />
+            <input 
+              name="password" 
+              type={showPassword ? "text" : "password"} 
+              required 
+              className="h-10 w-full rounded border border-border pl-9 pr-10 text-sm bg-white outline-none focus:border-primary" 
+              placeholder="••••••••" 
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-charcoal focus:outline-none"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </div>
         </div>
 
         <div className="flex items-center justify-between text-xs">
-          <label className="flex items-center gap-2 text-charcoal/80"><input type="checkbox" /> Remember me</label>
+          <label className="flex items-center gap-2 text-charcoal/80">
+            <input type="checkbox" /> Remember me
+          </label>
           <Link href="/forgot-password" className="text-primary hover:underline">Forgot password?</Link>
         </div>
 

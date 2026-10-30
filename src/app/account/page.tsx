@@ -6,15 +6,22 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 
+type OrderWithItems = Awaited<ReturnType<typeof prisma.order.findMany<{ include: { items: true } }>>>[number];
+
 export default async function AccountPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const userOrders = await prisma.order.findMany({
-    where: { userId: session.userId },
-    orderBy: { createdAt: "desc" },
-    include: { items: true },
-  });
+  let userOrders: OrderWithItems[] = [];
+  try {
+    userOrders = await prisma.order.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: "desc" },
+      include: { items: true },
+    });
+  } catch (e) {
+    console.error("Failed to fetch user orders:", e);
+  }
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-6 md:py-10">

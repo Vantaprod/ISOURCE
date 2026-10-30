@@ -25,6 +25,37 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-6 md:py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            name: product.name,
+            image: product.images,
+            description: product.shortDescription,
+            sku: product.sku,
+            brand: { "@type": "Brand", name: product.vendor.name },
+            offers: {
+              "@type": "Offer",
+              url: `${process.env.NEXT_PUBLIC_SITE_URL}/product/${product.slug}`,
+              priceCurrency: "NGN",
+              price: (product.priceKobo / 100).toFixed(2),
+              itemCondition: "https://schema.org/NewCondition",
+              availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+              seller: { "@type": "Organization", name: product.vendor.name },
+            },
+            ...(product.reviewCount > 0 && product.rating > 0 ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: product.rating,
+                reviewCount: product.reviewCount,
+              }
+            } : {})
+          }),
+        }}
+      />
+
       <nav className="text-xs text-muted mb-4">
         <Link href="/" className="hover:text-primary">Home</Link><span className="mx-1">/</span>
         {cat && <><Link href={`/category/${cat.slug}`} className="hover:text-primary">{cat.name}</Link><span className="mx-1">/</span></>}
