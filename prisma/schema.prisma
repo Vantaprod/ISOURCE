@@ -6,57 +6,13 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserRole {
-  CUSTOMER
-  VENDOR
-  ADMIN
-}
-
-enum VendorStatus {
-  PENDING
-  APPROVED
-  SUSPENDED
-}
-
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  RETURNED
-}
-
-enum PaymentStatus {
-  PENDING
-  AUTHORIZED
-  PAID
-  FAILED
-  REFUNDED
-  PARTIALLY_REFUNDED
-}
-
-enum PaymentProvider {
-  PAYSTACK
-  FLUTTERWAVE
-  BANK_TRANSFER
-  PAY_ON_DELIVERY
-}
-
-enum FulfillmentStatus {
-  PENDING
-  PROCESSING
-  DISPATCHED
-  DELIVERED
-  FAILED
-  RETURNED
-}
-
-enum ShipmentCarrier {
-  ISOURCE
-  VENDOR
-}
+enum UserRole { CUSTOMER VENDOR ADMIN }
+enum VendorStatus { PENDING APPROVED SUSPENDED }
+enum OrderStatus { PENDING CONFIRMED PROCESSING SHIPPED DELIVERED CANCELLED RETURNED }
+enum PaymentStatus { PENDING AUTHORIZED PAID FAILED REFUNDED PARTIALLY_REFUNDED }
+enum PaymentProvider { PAYSTACK FLUTTERWAVE BANK_TRANSFER PAY_ON_DELIVERY }
+enum FulfillmentStatus { PENDING PROCESSING DISPATCHED DELIVERED FAILED RETURNED }
+enum ShipmentCarrier { ISOURCE VENDOR }
 
 model User {
   id            String    @id @default(cuid())
@@ -68,32 +24,31 @@ model User {
   role          UserRole  @default(CUSTOMER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
   addresses     Address[]
   cart          Cart?
   orders        Order[]
   reviews       ProductReview[]
   vendor        Vendor?
-
   @@index([email])
 }
 
 model Vendor {
-  id          String       @id @default(cuid())
-  userId      String       @unique
-  slug        String       @unique
-  name        String
-  description String?
-  logoUrl     String?
-  status      VendorStatus @default(PENDING)
-  isIsource   Boolean      @default(false)
-  location    String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  products    Product[]
-
+  id             String       @id @default(cuid())
+  userId         String       @unique
+  slug           String       @unique
+  name           String
+  description    String?
+  logoUrl        String?
+  status         VendorStatus @default(PENDING)
+  isIsource      Boolean      @default(false)
+  location       String?
+  commissionRate Float        @default(10)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products       Product[]
+  ledgerEntries  VendorLedgerEntry[]
+  payouts        Payout[]
   @@index([status])
 }
 
@@ -107,7 +62,6 @@ model Category {
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   products    Product[]
 }
 
@@ -131,7 +85,6 @@ model Product {
   isFeatured        Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-
   category          Category        @relation(fields: [categoryId], references: [id])
   vendor            Vendor          @relation(fields: [vendorId], references: [id])
   images            ProductImage[]
@@ -139,7 +92,6 @@ model Product {
   reviews           ProductReview[]
   orderItems        OrderItem[]
   cartItems         CartItem[]
-
   @@index([categoryId, isActive])
   @@index([vendorId])
   @@index([slug])
@@ -152,9 +104,7 @@ model ProductImage {
   url       String
   alt       String?
   sortOrder Int     @default(0)
-
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
   @@index([productId])
 }
 
@@ -166,11 +116,9 @@ model ProductVariant {
   stock     Int      @default(0)
   priceKobo Int
   createdAt DateTime @default(now())
-
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   cartItems  CartItem[]
   orderItems OrderItem[]
-
   @@index([productId])
 }
 
@@ -182,10 +130,8 @@ model ProductReview {
   title     String
   body      String
   createdAt DateTime @default(now())
-
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([productId])
 }
 
@@ -202,9 +148,7 @@ model Address {
   postalCode String?
   isDefault  Boolean  @default(false)
   createdAt  DateTime @default(now())
-
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@index([userId])
 }
 
@@ -213,7 +157,6 @@ model Cart {
   userId    String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     CartItem[]
 }
@@ -225,11 +168,9 @@ model CartItem {
   variantId String?
   qty       Int
   createdAt DateTime @default(now())
-
   cart      Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product   Product         @relation(fields: [productId], references: [id])
   variant   ProductVariant? @relation(fields: [variantId], references: [id])
-
   @@index([cartId])
 }
 
@@ -241,7 +182,6 @@ model Order {
   guestPhone           String?
   status               OrderStatus     @default(PENDING)
   paymentStatus        PaymentStatus   @default(PENDING)
-
   shippingFirstName    String
   shippingLastName     String
   shippingPhone        String
@@ -250,22 +190,19 @@ model Order {
   shippingState        String
   shippingPostalCode   String?
   shippingInstructions String?
-
   deliveryMethod       String
   paymentMethod        PaymentProvider
   subtotalKobo         Int
   deliveryKobo         Int
   discountKobo         Int             @default(0)
   totalKobo            Int
-
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
-
   user                 User?           @relation(fields: [userId], references: [id])
   items                OrderItem[]
   payments             Payment[]
   shipments            Shipment[]
-
+  refunds              Refund[]
   @@index([userId])
   @@index([status])
   @@index([paymentStatus])
@@ -277,25 +214,19 @@ model OrderItem {
   orderId           String
   productId         String?
   variantId         String?
-
   productName       String
   variantLabel      String?
   sku               String
   unitKobo          Int
   qty               Int
   lineTotalKobo     Int
-
   vendorId          String
-
   fulfillmentStatus FulfillmentStatus @default(PENDING)
   vendorManaged     Boolean           @default(false)
-
   createdAt         DateTime          @default(now())
-
   order             Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product           Product?          @relation(fields: [productId], references: [id])
   variant           ProductVariant?   @relation(fields: [variantId], references: [id])
-
   @@index([orderId])
   @@index([vendorId])
   @@index([fulfillmentStatus])
@@ -313,9 +244,7 @@ model Payment {
   rawResponse       Json?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
-
   order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
   @@index([orderId])
   @@index([providerReference])
   @@index([status])
@@ -333,9 +262,7 @@ model Shipment {
   podCollected    Boolean           @default(false)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-
   order           Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
   @@index([orderId])
   @@index([trackingNumber])
 }
@@ -348,7 +275,6 @@ model DeliveryZone {
   freeAboveKobo Int?
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
-
   @@index([state])
 }
 
@@ -356,4 +282,59 @@ model SiteSetting {
   id        String   @id @default("singleton")
   data      Json
   updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// LAYER 4: Financial Infrastructure
+// ============================================================
+
+model VendorLedgerEntry {
+  id          String   @id @default(cuid())
+  vendorId    String
+  type        String   // SALE, COMMISSION, PAYOUT, REFUND, ADJUSTMENT
+  amountKobo  Int      // Positive = credit to vendor; Negative = debit
+  description String
+  orderId     String?
+  payoutId    String?
+  createdAt   DateTime @default(now())
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  payout      Payout?  @relation(fields: [payoutId], references: [id])
+  @@index([vendorId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Payout {
+  id          String    @id @default(cuid())
+  vendorId    String
+  amountKobo  Int
+  status      String    @default("PENDING") // PENDING, PROCESSING, PAID, FAILED
+  method      String?   // bank_transfer, paystack_transfer
+  reference   String?   @unique
+  notes       String?
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  vendor      Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  ledgerEntries VendorLedgerEntry[]
+  @@index([vendorId])
+  @@index([status])
+}
+
+model Refund {
+  id           String    @id @default(cuid())
+  orderId      String
+  orderItemId  String?
+  amountKobo   Int
+  reason       String
+  status       String    @default("REQUESTED") // REQUESTED, APPROVED, REJECTED, PROCESSED
+  requestedBy  String
+  reviewedBy   String?
+  adminNotes   String?
+  processedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  @@index([orderId])
+  @@index([status])
 }

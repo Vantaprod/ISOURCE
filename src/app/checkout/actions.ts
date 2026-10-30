@@ -96,6 +96,27 @@ export async function placeOrder(formData: CheckoutFormData, cartItems: CartLine
         items: { create: orderItemsData },
       },
     });
+    // ---- LAYER 4: Record commission + ledger entries ----
+    const vendorMap = new Map<string, { total: number; commissionRate: number }>();
+    for (const item of orderItemsData) {
+      const v = await prisma.vendor.findUnique({ where: { id: item.vendorId } });
+      if (!v) continue;
+      const existing = vendorMap.get(item.vendorId) || { total: 0, commissionRate: v.commissionRate };
+      existing.total += item.lineTotalKobo;
+      vendorMap.set(item.vendorId, existing);
+    }
+
+    for (const [vendorId, data] of vendorMap.entries()) {
+      const commissionKobo = Math.round(data.total * (data.commissionRate / 100));
+      const netKobo = data.total - commissionKobo;
+
+      await prisma.vendorLedgerEntry.createMany({
+        data: [
+          { vendorId, type: "SALE", amountKobo: data.total, description: `Sale from order ${order.orderNumber}`, orderId: order.id },
+          { vendorId, type: "COMMISSION", amountKobo: -commissionKobo, description: `Platform commission (${data.commissionRate}%) on order ${order.orderNumber}`, orderId: order.id },
+        ],
+      });
+    }
 
     return { success: true, orderNumber: order.orderNumber };
   } catch (error: unknown) {
