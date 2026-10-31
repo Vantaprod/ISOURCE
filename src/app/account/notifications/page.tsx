@@ -3,6 +3,7 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { Bell, CheckCircle2, AlertCircle, Info, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import type { Notification } from "@prisma/client";
 
 const ICONS = { INFO: Info, SUCCESS: CheckCircle2, WARNING: AlertTriangle, ALERT: AlertCircle };
 const COLORS = { INFO: "bg-primary/10 text-primary", SUCCESS: "bg-success/10 text-success", WARNING: "bg-warning/10 text-warning", ALERT: "bg-danger/10 text-danger" };
@@ -11,11 +12,20 @@ export default async function NotificationsPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const notifications = await prisma.notification.findMany({
-    where: { userId: session.userId },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  // FIX: Use Prisma's Notification type instead of 'any'
+  let notifications: Notification[] = [];
+  let dbError = false;
+
+  try {
+    notifications = await prisma.notification.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+  } catch (error) {
+    console.error("Failed to load notifications (DB might be asleep):", error);
+    dbError = true;
+  }
 
   return (
     <div className="space-y-6">
@@ -24,10 +34,19 @@ export default async function NotificationsPage() {
           <h1 className="text-2xl font-bold">Notifications</h1>
           <p className="text-sm text-muted">Updates about your account and orders.</p>
         </div>
-        <div className="rounded-lg bg-white border border-border px-3 py-1.5 text-xs font-bold"><Bell size={12} className="inline mr-1" /> {notifications.filter(n => !n.isRead).length} unread</div>
+        <div className="rounded-lg bg-white border border-border px-3 py-1.5 text-xs font-bold">
+          <Bell size={12} className="inline mr-1" /> {notifications.filter(n => !n.isRead).length} unread
+        </div>
       </div>
 
-      {notifications.length === 0 ? (
+      {dbError ? (
+        <div className="rounded-xl border border-warning/30 bg-warning/5 p-10 text-center">
+          <AlertTriangle size={32} className="mx-auto text-warning mb-3" />
+          <p className="font-bold text-charcoal">Could not load notifications</p>
+          <p className="text-sm text-muted mt-1">The database connection timed out. Please try refreshing the page.</p>
+          <Link href="/account/notifications" className="inline-block mt-4 h-10 px-4 leading-10 rounded bg-primary text-white text-sm font-medium hover:bg-primary-hover">Try Again</Link>
+        </div>
+      ) : notifications.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-10 text-center">
           <Bell size={32} className="mx-auto text-muted mb-3" />
           <p className="font-bold">No notifications yet</p>

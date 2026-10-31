@@ -101,6 +101,7 @@ model Brand {
   description     String?
   logoUrl         String?
   website         String?
+  isFeatured  Boolean     @default(false)
   status          BrandStatus @default(PENDING)
   ownerId         String
   verificationDoc String?
@@ -543,7 +544,7 @@ model HomepageSection {
   @@index([isVisible, position])
 }
 // ============================================================
-// LAYER 3 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Collections & Campaigns
+// LAYER 3 ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Collections & Campaigns
 // ============================================================
 
 model Collection {
@@ -575,7 +576,7 @@ model Campaign {
   @@index([isActive, startDate, endDate])
 }
 // ============================================================
-// LAYER 3 â€” Product Ranking & Sponsored Products
+// LAYER 3 Ã¢â‚¬â€ Product Ranking & Sponsored Products
 // ============================================================
 
 model RankingConfig {

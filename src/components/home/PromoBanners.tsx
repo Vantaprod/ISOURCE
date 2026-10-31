@@ -6,6 +6,7 @@ export function PromoBanners() {
   return (
     <section className="mx-auto max-w-[1440px] px-4 py-6">
       <div className="grid md:grid-cols-2 gap-4">
+        
         {/* Solar Bundles */}
         <div className="relative rounded-xl overflow-hidden bg-charcoal text-white flex items-center min-h-[180px]">
           <div className="p-6 md:p-8 relative z-10 md:w-3/4">
@@ -16,7 +17,7 @@ export function PromoBanners() {
             </Link>
           </div>
           <div className="absolute right-0 top-0 w-1/2 h-full opacity-40">
-             <Image src="/images/placeholder.svg" alt="House" fill className="object-cover" />
+             <Image src="/images/placeholder.svg" alt="House" fill sizes="400px" className="object-cover" />
           </div>
         </div>
 
@@ -30,9 +31,10 @@ export function PromoBanners() {
             </Link>
           </div>
           <div className="absolute right-0 bottom-0 w-1/3 h-full opacity-30">
-             <Image src="/images/placeholder.svg" alt="Expert" fill className="object-cover object-top" />
+             <Image src="/images/placeholder.svg" alt="Expert" fill sizes="300px" className="object-cover object-top" />
           </div>
         </div>
+
       </div>
     </section>
   );

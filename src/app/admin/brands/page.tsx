@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { BrandRow } from "./BrandRow";
-import { Building2 } from "lucide-react";
 
 export default async function AdminBrandsPage() {
   const brands = await prisma.brand.findMany({
@@ -12,7 +11,7 @@ export default async function AdminBrandsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-charcoal">Brand Management</h1>
-        <p className="text-sm text-muted">Verify and manage official brand accounts.</p>
+        <p className="text-sm text-muted">Verify brands, add logos, and feature them on the homepage.</p>
       </div>
 
       <div className="rounded-xl border border-border bg-white overflow-hidden">
@@ -20,25 +19,22 @@ export default async function AdminBrandsPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-surface text-muted text-xs uppercase font-bold tracking-wider">
               <tr>
-                <th className="px-5 py-3">Brand Name</th>
-                <th className="px-5 py-3">Owner</th>
-                <th className="px-5 py-3">Products</th>
+                <th className="px-5 py-3">Brand</th>
+                <th className="px-5 py-3">Featured</th>
                 <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {brands.map((b) => (
                 <BrandRow key={b.id} brand={{
                   id: b.id, name: b.name, ownerEmail: b.owner.email,
-                  productCount: b._count.products, status: b.status
+                  isFeatured: b.isFeatured, status: b.status
                 }} />
               ))}
             </tbody>
           </table>
         </div>
-        {brands.length === 0 && (
-          <div className="p-10 text-center"><Building2 className="mx-auto text-muted mb-3" size={32} /><p className="text-charcoal font-medium">No brands yet</p><p className="text-sm text-muted mt-1">Brands appear here after applying via /brand/apply.</p></div>
-        )}
       </div>
     </div>
   );

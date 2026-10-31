@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { ToastProvider } from "@/context/ToastContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { getSession, type SessionPayload } from "@/lib/session";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "Isource — Nigeria's multi-vendor marketplace", template: "%s · Isource" },
@@ -23,8 +21,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-screen flex flex-col bg-white">
+    <html lang="en">
+      <body className="min-h-screen flex flex-col bg-white font-sans">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -33,20 +31,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               "@type": "Organization",
               name: "Isource",
               url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-              logo: `${process.env.NEXT_PUBLIC_SITE_URL}/images/logo.png`,
-              sameAs: [
-                "https://facebook.com/isource",
-                "https://twitter.com/isource",
-                "https://instagram.com/isource"
-              ]
             }),
           }}
         />
         <CartProvider>
           <WishlistProvider>
-            <Header user={session} />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <ToastProvider>
+              <Header user={session} />
+              <main className="grow">{children}</main>
+              <Footer />
+            </ToastProvider>
           </WishlistProvider>
         </CartProvider>
       </body>
