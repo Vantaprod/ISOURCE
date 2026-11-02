@@ -103,7 +103,7 @@ export function Header({ user }: { user: SessionPayload | null }) {
                   {user ? (
                     <div className="relative">
                       <button onClick={() => setShowMenu(!showMenu)} className="flex items-center gap-2 px-2 py-1 text-sm hover:text-primary">
-                        <User size={20} /><span className="hidden lg:inline">{user.name.split(" ")[0]}</span><ChevronDown size={14} className="hidden lg:inline text-muted" />
+                        <User size={20} /><span className="hidden lg:inline">{user?.name?.split(" ")[0] || "Account"}</span><ChevronDown size={14} className="hidden lg:inline text-muted" />
                       </button>
                       {showMenu && (
                         <>
