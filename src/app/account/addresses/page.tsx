@@ -40,7 +40,7 @@ export default async function AddressesPage() {
                   Default
                 </span>
               )}
-              <h3 className="font-bold text-charcoal mb-2">{addr.fullName}</h3>
+              <h3 className="font-bold text-charcoal mb-2">{addr.firstName} {addr.lastName}</h3>
               <p className="text-sm text-muted mb-1">{addr.street}</p>
               <p className="text-sm text-muted mb-4">{addr.city}, {addr.state}</p>
               <p className="text-sm font-medium text-charcoal mb-4">{addr.phone}</p>

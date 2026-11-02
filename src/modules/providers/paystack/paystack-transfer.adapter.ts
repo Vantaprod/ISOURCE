@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/prisma";
 
 export class PaystackTransferAdapter {
   private secretKey = process.env.PAYSTACK_SECRET_KEY!;

@@ -17,7 +17,7 @@ export function Footer() {
                 className="h-16 w-auto object-contain -my-2" 
               />
             </Link>
-            <p className="text-sm mb-4 max-w-xs">Nigeria's trusted marketplace for quality products and reliable service.</p>
+            <p className="text-sm mb-4 max-w-xs">Nigeria&apos;s trusted marketplace for quality products and reliable service.</p>
           </div>
 
           {/* Links Columns */}

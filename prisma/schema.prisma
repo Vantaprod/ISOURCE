@@ -50,12 +50,18 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   PARTIALLY_REFUNDED
+  PROCESSING
+  SUCCESSFUL
+  ABANDONED
+  REVERSED
 }
 enum PaymentProvider {
   PAYSTACK
   FLUTTERWAVE
   BANK_TRANSFER
   PAY_ON_DELIVERY
+  MONNIFY
+  MANUAL
 }
 enum FulfillmentStatus {
   PENDING
@@ -161,6 +167,7 @@ model Vendor {
   payouts        Payout[]
   memberships    Membership[]
   @@index([status])
+  financeAccount    VendorFinanceAccount?
 }
 
 model Category {
@@ -670,20 +677,94 @@ model BundleItem {
 // FINANCIAL DOMAIN — Payment, Ledger, & Settlement
 // ============================================================
 
-enum PaymentStatus { PENDING PROCESSING SUCCESSFUL FAILED ABANDONED REVERSED PARTIALLY_REFUNDED REFUNDED }
-enum PaymentProvider { PAYSTACK FLUTTERWAVE MONNIFY MANUAL }
-enum PaymentMethod { CARD BANK_TRANSFER USSD OPAY PALMPAY OTHER_WALLET OTHER }
-enum VendorOrderStatus { PENDING CONFIRMED PROCESSING READY_FOR_DISPATCH DISPATCHED DELIVERED COMPLETED CANCELLED DISPUTED }
-enum DeliveryStatus { PENDING PICKED_UP IN_TRANSIT OUT_FOR_DELIVERY DELIVERED FAILED RETURNED DISPUTED }
-enum SettlementStatus { PENDING ELIGIBLE REQUESTED APPROVED PROCESSING SUCCESSFUL FAILED REVERSED ON_HOLD CANCELLED }
-enum RefundStatus { REQUESTED UNDER_REVIEW APPROVED PROCESSING SUCCESSFUL FAILED REJECTED }
-enum LedgerAccountType { ASSET LIABILITY REVENUE EXPENSE EQUITY }
-enum LedgerEntryDirection { DEBIT CREDIT }
-enum LedgerJournalStatus { PENDING POSTED REVERSED }
-enum DisputeStatus { OPEN UNDER_REVIEW RESOLVED REJECTED CLOSED }
-enum WebhookStatus { RECEIVED PROCESSING PROCESSED FAILED IGNORED }
-enum PayoutMode { AUTOMATIC VENDOR_REQUEST ADMIN_APPROVED }
 
+
+enum PaymentMethod {
+  CARD
+  BANK_TRANSFER
+  USSD
+  OPAY
+  PALMPAY
+  OTHER_WALLET
+  OTHER
+}
+enum VendorOrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  READY_FOR_DISPATCH
+  DISPATCHED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+enum DeliveryStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  RETURNED
+  DISPUTED
+}
+enum SettlementStatus {
+  PENDING
+  ELIGIBLE
+  REQUESTED
+  APPROVED
+  PROCESSING
+  SUCCESSFUL
+  FAILED
+  REVERSED
+  ON_HOLD
+  CANCELLED
+}
+enum RefundStatus {
+  REQUESTED
+  UNDER_REVIEW
+  APPROVED
+  PROCESSING
+  SUCCESSFUL
+  FAILED
+  REJECTED
+}
+enum LedgerAccountType {
+  ASSET
+  LIABILITY
+  REVENUE
+  EXPENSE
+  EQUITY
+}
+enum LedgerEntryDirection {
+  DEBIT
+  CREDIT
+}
+enum LedgerJournalStatus {
+  PENDING
+  POSTED
+  REVERSED
+}
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+  CLOSED
+}
+enum WebhookStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+  IGNORED
+}
+enum PayoutMode {
+  AUTOMATIC
+  VENDOR_REQUEST
+  ADMIN_APPROVED
+}
 model FinancePayment {
   id                String         @id @default(cuid())
   orderId           String         @unique
@@ -818,8 +899,9 @@ model CommissionTransaction {
 model VendorFinanceAccount {
   id                String   @id @default(cuid())
   vendorId          String   @unique
+  vendor            Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   currency          String   @default("NGN")
-  bankAccountId     String?
+  bankAccountId     String?   @unique
   active            Boolean  @default(true)
   suspended         Boolean  @default(false)
   createdAt         DateTime @default(now())

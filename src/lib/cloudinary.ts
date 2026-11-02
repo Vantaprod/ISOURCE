@@ -8,3 +8,6 @@ cloudinary.config({
 });
 
 export { cloudinary };
+// Re-export the official Cloudinary types so consumers don't
+// have to import from the raw package
+export type { UploadApiResponse, UploadApiErrorResponse } from "cloudinary";

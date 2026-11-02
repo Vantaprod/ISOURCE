@@ -11,7 +11,7 @@ interface CustomSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement
   options: Option[];
 }
 
-export function CustomSelect({ options, value, onChange, ...props }: CustomSelectProps) {
+export function CustomSelect({ options, value, onChange }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -47,7 +47,7 @@ export function CustomSelect({ options, value, onChange, ...props }: CustomSelec
               onClick={() => {
                 if (onChange) {
                   // Mimic the native event object
-                  onChange({ target: { value: opt.value } } as any);
+                  onChange({ target: { value: opt.value } } as unknown as React.ChangeEvent<HTMLSelectElement>);
                 }
                 setIsOpen(false);
               }}

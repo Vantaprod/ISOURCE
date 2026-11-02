@@ -9,7 +9,7 @@ export default async function AdminRankingPage() {
         <h1 className="text-2xl font-bold text-charcoal">Organic Ranking</h1>
         <p className="text-sm text-muted">Configure the weights used to rank products in search and category pages. Higher weight = more influence. Sponsored products are <strong>always labeled and inserted separately</strong> — these weights only affect organic results.</p>
       </div>
-      <RankingForm config={config} />
+      <RankingForm config={Object.fromEntries(Object.entries(config).filter(([, v]) => typeof v === "number")) as Record<string, number>} />
       <div className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">
         <p className="font-bold text-charcoal mb-2">How scoring works</p>
         <ul className="list-disc list-inside space-y-1">

@@ -32,7 +32,7 @@ export default async function ReturnsPage() {
         <div className="rounded-xl border border-dashed border-border bg-white p-12 text-center">
           <RotateCcw size={40} className="mx-auto text-muted mb-4" />
           <h2 className="text-lg font-bold text-charcoal mb-2">No returns or refunds</h2>
-          <p className="text-sm text-muted mb-4">You haven't requested any returns yet. If you have an issue with an order, you can request a return from your order history.</p>
+          <p className="text-sm text-muted mb-4">You haven&apos;t requested any returns yet. If you have an issue with an order, you can request a return from your order history.</p>
           <Link href="/account/orders" className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-bold text-white hover:bg-primary-hover">
             Go to My Orders
           </Link>

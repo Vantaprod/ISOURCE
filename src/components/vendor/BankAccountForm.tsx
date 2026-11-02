@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { verifyAndSaveBankAccount, fetchBankList } from "@/app/actions/vendor-bank";
 import { ShieldCheck, Loader2 } from "lucide-react";
 
-export function BankAccountForm({ existing }: { existing: any }) {
+export function BankAccountForm({ existing }: { existing: { accountName: string; bankName: string; accountLast4: string } | null }) {
   const [banks, setBanks] = useState<{ code: string; name: string }[]>([]);
   const [bankCode, setBankCode] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -28,8 +28,8 @@ export function BankAccountForm({ existing }: { existing: any }) {
         setMessage({ type: "success", text: `Verified! ${result.accountName} (${result.bankName} — ***${result.last4})` });
         setAccountNumber("");
       }
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message || "Verification failed" });
+    } catch (err: unknown) {
+      setMessage({ type: "error", text: err instanceof Error ? err.message : "Verification failed" });
     } finally {
       setLoading(false);
     }

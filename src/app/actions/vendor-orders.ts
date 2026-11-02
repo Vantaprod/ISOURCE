@@ -57,3 +57,33 @@ export async function markVendorOrderDelivered(vendorOrderId: string, trackingNu
   revalidatePath("/vendor/finance");
   return { success: true };
 }
+// Compatibility shim for legacy VendorOrderRow component
+export async function updateItemFulfillment(itemId: string, newStatus: string) {
+  const session = await getSession();
+  if (!session || session.role !== "VENDOR") throw new Error("Unauthorized");
+
+  const vendor = await prisma.vendor.findUnique({ where: { userId: session.userId } });
+  if (!vendor) throw new Error("Vendor not found");
+
+  const item = await prisma.financeOrderItem.findUnique({
+    where: { id: itemId },
+    include: { vendorOrder: true },
+  });
+  
+  if (!item || item.vendorOrder.vendorId !== vendor.id) {
+    throw new Error("Unauthorized");
+  }
+
+  if (newStatus === "DELIVERED" || newStatus === "delivered") {
+    return await markVendorOrderDelivered(item.vendorOrderId);
+  }
+
+  await prisma.financeVendorOrder.update({
+    where: { id: item.vendorOrderId },
+    data: { status: newStatus as any },
+  });
+
+  revalidatePath("/vendor/orders");
+  revalidatePath("/vendor/finance");
+  return { success: true };
+}

@@ -83,7 +83,7 @@ export default async function OrdersPage() {
                       <p className="text-sm font-medium text-charcoal truncate">{item.product?.name || "Item name unavailable"}</p>
                       <p className="text-xs text-muted">Qty: {item.qty}</p>
                     </div>
-                    <p className="text-sm font-bold text-charcoal">{formatNairaShort(item.priceKobo)}</p>
+                    <p className="text-sm font-bold text-charcoal">{formatNairaShort(item.lineTotalKobo)}</p>
                   </div>
                 ))}
                 {order.items.length > 3 && (

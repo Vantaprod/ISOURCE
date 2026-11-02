@@ -78,7 +78,8 @@ export async function requestWithdrawal(amountKobo: number) {
   let financeAccount = vendor.financeAccount;
   if (!financeAccount) {
     financeAccount = await prisma.vendorFinanceAccount.create({
-      data: { vendorId: vendor.id, currency: "NGN" }
+      data: { vendorId: vendor.id, currency: "NGN" },
+      include: { bankAccount: true },
     });
   }
 

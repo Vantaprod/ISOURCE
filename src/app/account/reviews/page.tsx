@@ -48,7 +48,7 @@ export default async function ReviewsPage() {
                     ))}
                     <span className="text-xs text-muted ml-2">{new Date(review.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <p className="text-sm text-charcoal/80">{review.comment || "No written review."}</p>
+                  <p className="text-sm text-charcoal/80">{review.body || "No written review."}</p>
                 </div>
               </div>
             </div>

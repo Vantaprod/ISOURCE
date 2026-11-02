@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { logAudit } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
-import { cloudinary, type UploadApiResponse } from "@/lib/cloudinary";
+import { cloudinary } from "@/lib/cloudinary";
+import type { UploadApiResponse } from "cloudinary";
 import type { BrandStatus } from "@prisma/client";
 
 async function uploadToCloudinary(file: File): Promise<string | null> {
