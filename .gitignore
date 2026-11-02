@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Backups and local artifacts
+*.bak
+*.bak_*
+*.typebak
+*.pkgbak
+*.cfgfixbak
+*.dupbak
+*.fixbak
+*.relbak
+*.uniqbak
+*.herofixbak
+*.targetbak
+.backups/
+.prisma/
