@@ -9,13 +9,44 @@ export function EditBrandForm({ brand }: { brand: Brand }) {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [preview, setPreview] = useState<string | null>(brand.logoUrl);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file.");
+      return;
+    }
+    setPreview(URL.createObjectURL(file));
+    
+    // We need to manually assign the file to the input so the form submits it
+    if (fileInputRef.current) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      fileInputRef.current.files = dataTransfer.files;
+    }
+  }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-    }
+    if (file) handleFile(file);
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
   }
 
   function clearFile() {
@@ -44,9 +75,15 @@ export function EditBrandForm({ brand }: { brand: Brand }) {
       <div>
         <label className="block text-sm font-bold text-charcoal mb-2">Brand Logo</label>
         
+        {/* Drag & Drop Area */}
         <div 
-          className={`relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-surface/50 ${preview ? 'border-primary/50' : 'border-border'}`}
+          className={`relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors ${
+            isDragging ? "border-primary bg-primary/5" : "border-border hover:bg-surface/50"
+          } ${preview ? 'border-primary/50' : ''}`}
           onClick={() => fileInputRef.current?.click()}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
         >
           <input 
             type="file" 

@@ -35,7 +35,7 @@ export function AddToCart({ productId, disabled, variants }: { productId: string
           <input type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))} className="w-12 h-11 text-center text-sm outline-none" aria-label="Quantity" />
           <button type="button" onClick={() => setQty((q) => q + 1)} className="px-3 h-11 text-lg hover:bg-surface" aria-label="Increase quantity">+</button>
         </div>
-        <button type="button" disabled={disabled} onClick={handleAdd} className="flex-1 h-11 rounded-md bg-primary text-white text-sm font-bold hover:bg-primary-hover disabled:bg-border disabled:text-muted disabled:cursor-not-allowed">
+        <button type="button" disabled={disabled} onClick={handleAdd} className="flex-1 h-11 rounded-md bg-cta text-white text-sm font-bold hover:bg-cta-hover disabled:bg-border disabled:text-muted disabled:cursor-not-allowed">
           {added ? "Added to cart ✓" : disabled ? "Out of stock" : "Add to cart"}
         </button>
       </div>

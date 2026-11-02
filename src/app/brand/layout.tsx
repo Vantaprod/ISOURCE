@@ -1,7 +1,11 @@
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/session";
 import Link from "next/link";
-import { LayoutDashboard, Building2, Package, Users, UserCog, Megaphone, BarChart3, ShieldCheck, Settings, LifeBuoy, ArrowRight } from "lucide-react";
+import { LayoutDashboard, Building2, Package, Users, UserCog, Megaphone, BarChart3, ShieldCheck, Settings, LifeBuoy, ArrowRight, Plus } from "lucide-react";
 
-export default function BrandLayout({ children }: { children: React.ReactNode }) {
+export default async function BrandLayout({ children }: { children: React.ReactNode }) {
+  const session = await getSession();
+  if (!session || session.role !== 'BRAND') redirect('/login');
   return (
     <div className="mx-auto max-w-[1440px] px-4 py-6 md:py-8 grid md:grid-cols-[260px_1fr] gap-6">
       <aside>
@@ -10,6 +14,7 @@ export default function BrandLayout({ children }: { children: React.ReactNode })
           <ul className="py-2 text-sm text-white/70">
             <li><Link href="/brand" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-primary bg-primary/20 text-white font-medium"><LayoutDashboard size={18} /> Dashboard</Link></li>
             <li><Link href="/brand/profile" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><Building2 size={18} /> Brand Profile</Link></li>
+            <li><Link href="/brand/bundles/new" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><Plus size={18} /> Create Bundle</Link></li>
             <li><Link href="/brand/products" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><Package size={18} /> Products</Link></li>
             <li><Link href="/brand/sellers" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><Users size={18} /> Authorised Sellers</Link></li>
             <li><Link href="/brand/representatives" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><UserCog size={18} /> Representatives</Link></li>

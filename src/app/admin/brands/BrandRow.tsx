@@ -1,4 +1,5 @@
 "use client";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { updateBrandStatus } from "./actions";
@@ -28,9 +29,7 @@ export function BrandRow({ brand }: { brand: { id: string; name: string; ownerEm
         )}
       </td>
       <td className="px-5 py-4">
-        <select value={currentStatus} onChange={handleChange} disabled={isPending} className={`h-8 rounded border border-border px-2 text-xs font-bold ${currentStatus === "APPROVED" ? "bg-success/10 text-success" : currentStatus === "SUSPENDED" || currentStatus === "REJECTED" ? "bg-danger/10 text-danger" : "bg-warning/10 text-warning"}`}>
-          {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <CustomSelect options={[{label:"PENDING", value:"PENDING"},{label:"APPROVED", value:"APPROVED"},{label:"REJECTED", value:"REJECTED"},{label:"SUSPENDED", value:"SUSPENDED"}]}  value={currentStatus} onChange={handleChange} disabled={isPending} className={`h-8 rounded border border-border px-2 text-xs font-bold ${currentStatus === "APPROVED" ? "bg-success/10 text-success" : currentStatus === "SUSPENDED" || currentStatus === "REJECTED" ? "bg-danger/10 text-danger" : "bg-warning/10 text-warning"}`} />
       </td>
       <td className="px-5 py-4 text-right">
         <Link href={`/admin/brands/${brand.id}/edit`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium">

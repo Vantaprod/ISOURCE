@@ -1,0 +1,97 @@
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import "dotenv/config";
+
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
+
+const BUNDLES = [
+  {
+    id: "bundle-solar-1",
+    slug: "solar-starter-kit",
+    name: "Solar Starter Kit (1kVA)",
+    shortDescription: "Perfect for lighting, fans, TV and charging.",
+    description: "Includes: 1 x 200W Solar Panel, 1 x 1kVA Pure Sine Wave Inverter, 1 x 100Ah Deep Cycle Battery, 10m cables, and installation accessories.",
+    category: "solar-power",
+    vendorSlug: "lura-energy",
+    sku: "BND-SOL-1K",
+    priceKobo: 45000000, // 450,000 NGN
+    originalPriceKobo: 52000000,
+    stock: 15,
+  },
+  {
+    id: "bundle-solar-2",
+    slug: "solar-home-kit",
+    name: "Solar Home Kit (3kVA)",
+    shortDescription: "Power your fridge, TV, and fans seamlessly.",
+    description: "Includes: 4 x 400W Solar Panels, 1 x 3kVA Hybrid Inverter, 2 x 200Ah Lithium Batteries, mounting rails, and 20m cables.",
+    category: "solar-power",
+    vendorSlug: "litharv",
+    sku: "BND-SOL-3K",
+    priceKobo: 125000000, // 1,250,000 NGN
+    originalPriceKobo: 140000000,
+    stock: 5,
+  },
+  {
+    id: "bundle-solar-3",
+    slug: "solar-business-kit",
+    name: "Solar Business Kit (5kVA)",
+    shortDescription: "Heavy-duty power for small businesses.",
+    description: "Includes: 6 x 500W Solar Panels, 1 x 5kVA Inverter, 4 x 200Ah Batteries, heavy-duty racking, and installation cables.",
+    category: "solar-power",
+    vendorSlug: "huihang",
+    sku: "BND-SOL-5K",
+    priceKobo: 245000000, // 2,450,000 NGN
+    stock: 3,
+  }
+];
+
+async function main() {
+  console.log("Seeding Bundles...");
+  
+  for (const b of BUNDLES) {
+    const category = await prisma.category.findUnique({ where: { slug: b.category } });
+    const vendor = await prisma.vendor.findUnique({ where: { slug: b.vendorSlug } });
+    if (!category || !vendor) {
+      console.warn(`Skipping ${b.name}: category or vendor missing`);
+      continue;
+    }
+
+    await prisma.product.upsert({
+      where: { id: b.id },
+      update: {},
+      create: {
+        id: b.id,
+        slug: b.slug,
+        name: b.name,
+        shortDescription: b.shortDescription,
+        description: b.description,
+        categoryId: category.id,
+        vendorId: vendor.id,
+        sku: b.sku,
+        priceKobo: b.priceKobo,
+        originalPriceKobo: b.originalPriceKobo,
+        stock: b.stock,
+        isBundle: true, // Mark as bundle
+        specs: [{ label: "Bundle Type", value: "Solar Package" }],
+        tags: ["featured", "recommended"],
+        images: { create: [{ url: "/images/placeholder.svg", sortOrder: 0 }] },
+        approvalStatus: "APPROVED",
+      },
+    });
+  }
+
+  // Update the Promo Banner to link to /bundles
+  const promo = await prisma.promoBanner.findFirst({ where: { title: "Solar Bundle Deals" } });
+  if (promo) {
+    await prisma.promoBanner.update({
+      where: { id: promo.id },
+      data: { ctaUrl: "/bundles" }
+    });
+    console.log("✅ Promo banner link updated to /bundles.");
+  }
+
+  console.log("✅ Bundles seeded successfully.");
+}
+
+main().then(() => prisma.$disconnect()).catch(async (e) => { console.error(e); await prisma.$disconnect(); process.exit(1); });

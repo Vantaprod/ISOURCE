@@ -7,6 +7,8 @@ import { formatNairaShort } from "@/lib/format";
 import { redirect } from "next/navigation";
 
 export default async function AccountDashboard() {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const session = await getSession();
   if (!session) redirect("/login");
 
@@ -23,7 +25,7 @@ export default async function AccountDashboard() {
       {/* HERO BANNER - Now split with image */}
       <div className="rounded-2xl bg-[#FDF6ED] flex flex-col md:flex-row items-center justify-between overflow-hidden border border-border">
         <div className="p-6 md:p-8 md:w-1/2">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-charcoal">Good morning, {session.name.split(" ")[0]}! ðŸ‘‹</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-charcoal">{greeting}, {session.name.split(" ")[0]}! 👋</h1>
           <p className="text-muted mt-1">{"Here's what's happening with your account today."}</p>
         </div>
         <div className="relative w-full md:w-1/2 h-[180px] md:h-[200px] bg-primary overflow-hidden flex items-center justify-center">
@@ -34,7 +36,7 @@ export default async function AccountDashboard() {
            <div className="relative z-10 text-center md:text-left md:absolute md:left-8">
               <h2 className="text-xl md:text-2xl font-bold text-white mb-1">Shop Smart<br/>Live Better</h2>
               <p className="text-xs text-white/80 mb-4">Great products. Trusted sellers.</p>
-              <Link href="/" className="inline-block h-8 px-4 leading-8 rounded bg-white text-charcoal text-xs font-bold hover:bg-surface">Explore Marketplace â†’</Link>
+              <Link href="/" className="inline-block h-8 px-4 leading-8 rounded bg-white text-charcoal text-xs font-bold hover:bg-surface">Explore Marketplace →</Link>
            </div>
            
            {/* The image */}
@@ -103,7 +105,7 @@ export default async function AccountDashboard() {
                     <td className="px-4 py-3 text-muted">{o.items.length} item(s)</td>
                     <td className="px-4 py-3"><span className="inline-flex px-2 py-1 rounded-full text-[10px] font-bold bg-success/10 text-success">{o.status}</span></td>
                     <td className="px-4 py-3 font-semibold text-charcoal">{formatNairaShort(o.totalKobo)}</td>
-                    <td className="px-4 py-3 text-right"><Link href={`/checkout/confirmation/${o.orderNumber}`} className="text-xs text-primary font-medium hover:underline">View details â†’</Link></td>
+                    <td className="px-4 py-3 text-right"><Link href={`/checkout/confirmation/${o.orderNumber}`} className="text-xs text-primary font-medium hover:underline">View details →</Link></td>
                   </tr>
                 ))
               )}

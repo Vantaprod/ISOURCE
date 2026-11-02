@@ -15,6 +15,7 @@ import type { SessionPayload } from "@/lib/session";
 export function Header({ user }: { user: SessionPayload | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [adminQuery, setAdminQuery] = useState(""); // Separate state for admin to prevent warnings
   const [showMenu, setShowMenu] = useState(false);
   const [, startTransition] = useTransition();
   const { itemCount } = useCart();
@@ -46,10 +47,11 @@ export function Header({ user }: { user: SessionPayload | null }) {
               <Image 
                 src="/images/logo-black.png" 
                 alt="Isource" 
-                width={140} 
-                height={48} 
-                className="h-10 w-auto object-contain" 
+                width={200} 
+                height={50} 
+                className="h-[50px] w-auto object-contain" 
                 priority
+                unoptimized
               />
             </Link>
 
@@ -57,15 +59,29 @@ export function Header({ user }: { user: SessionPayload | null }) {
               <form role="search" className="hidden md:flex flex-1 max-w-2xl mx-auto">
                 <div className="flex w-full items-center h-10 rounded-lg border border-border bg-surface overflow-hidden focus-within:border-primary transition-all">
                   <Search size={18} className="ml-4 text-muted flex-shrink-0" />
-                  <input type="search" placeholder="Search users, vendors, brands, products, orders..." className="h-full flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted" />
+                  <input 
+                    type="search" 
+                    value={adminQuery}
+                    onChange={(e) => setAdminQuery(e.target.value)}
+                    placeholder="Search users, vendors, brands, products, orders..." 
+                    className="h-full flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted" 
+                  />
                 </div>
               </form>
             ) : (
               <form onSubmit={submitSearch} role="search" className="hidden md:flex flex-1 max-w-3xl mx-auto">
                 <div className="flex w-full items-center h-10 rounded-lg border border-border bg-surface overflow-hidden focus-within:border-primary transition-all">
                   <Search size={18} className="ml-4 text-muted flex-shrink-0" />
-                  <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search for products, brands, orders and more..." className="h-full flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted" />
-                  <button type="submit" className="flex h-8 w-8 flex-shrink-0 items-center justify-center m-1 rounded-md bg-primary text-white hover:bg-primary-hover"><Search size={16} /></button>
+                  <input 
+                    type="search" 
+                    value={query} 
+                    onChange={(e) => setQuery(e.target.value)} 
+                    placeholder="Search for products, brands, orders and more..." 
+                    className="h-full flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted" 
+                  />
+                  <button type="submit" className="flex h-8 w-8 flex-shrink-0 items-center justify-center m-1 rounded-md bg-primary text-white hover:bg-primary-hover">
+                    <Search size={16} />
+                  </button>
                 </div>
               </form>
             )}

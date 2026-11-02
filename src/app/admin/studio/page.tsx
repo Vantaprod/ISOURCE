@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Image as ImageIcon, Layers } from "lucide-react";
+import { Image as ImageIcon, Layers, Sparkles, Package } from "lucide-react";
 
 export default function StudioHomePage() {
   return (
@@ -9,7 +9,7 @@ export default function StudioHomePage() {
         <p className="text-sm text-muted">Manage your public homepage without a code deploy.</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <Link href="/admin/studio/hero" className="rounded-xl border border-border bg-white p-6 hover:border-primary transition-colors group">
           <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors"><ImageIcon size={24} /></div>
           <h2 className="font-bold text-charcoal text-lg mb-1">Hero Banners</h2>
@@ -20,6 +20,17 @@ export default function StudioHomePage() {
           <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors"><Layers size={24} /></div>
           <h2 className="font-bold text-charcoal text-lg mb-1">Homepage Sections</h2>
           <p className="text-sm text-muted">Reorder, hide, or schedule the product rows on the homepage.</p>
+        </Link>
+
+        <Link href="/admin/studio/promos" className="rounded-xl border border-border bg-white p-6 hover:border-primary transition-colors group">
+          <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors"><Sparkles size={24} /></div>
+          <h2 className="font-bold text-charcoal text-lg mb-1">Promo Banners</h2>
+          <p className="text-sm text-muted">Manage the dual-panel promo banners and rotate them.</p>
+        </Link>
+        <Link href="/admin/studio/bundles" className="rounded-xl border border-border bg-white p-6 hover:border-primary transition-colors group">
+          <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors"><Package size={24} /></div>
+          <h2 className="font-bold text-charcoal text-lg mb-1">Product Bundles</h2>
+          <p className="text-sm text-muted">Create solar bundles, holiday packages, and more.</p>
         </Link>
       </div>
     </div>

@@ -1,0 +1,57 @@
+﻿{
+    "version":  "bundle-feature-v4",
+    "files":  [
+                  {
+                      "path":  "src\\app\\actions\\bundles.ts",
+                      "sha256":  "164D56A9D1FA3C8AE1FFE7BB896C14FF1DC73158841B1F7716C32DA62A2CFE46"
+                  },
+                  {
+                      "path":  "src\\app\\bundles\\page.tsx",
+                      "sha256":  "C85D88C35ADC27CA9435679D7A2315A524DFC0F1FE5C23B29594C68FADAB3243"
+                  },
+                  {
+                      "path":  "src\\app\\bundles\\AddBundleToCart.tsx",
+                      "sha256":  "A7EB67B11B71BEE6704D3EFD6296EEB590A70D1263336D279873EE7D8B52EFC7"
+                  },
+                  {
+                      "path":  "src\\components\\bundles\\BundleForm.tsx",
+                      "sha256":  "30E6D1FDE7A74D42F59CD6B37DF908F69DD2DB0378162065A3117C3477FC25EF"
+                  },
+                  {
+                      "path":  "src\\context\\CartContext.tsx",
+                      "sha256":  "C96F8C566B27B58B7AE24A06348575E44B9B3BAAD23AE4CF0EA086F9DE506B5F"
+                  },
+                  {
+                      "path":  "src\\app\\admin\\studio\\page.tsx",
+                      "sha256":  "B238BB4F4972015F4C80F9F22078A34C46CAC65BA39F7B539ABD6624F3A627CD"
+                  },
+                  {
+                      "path":  "src\\app\\brand\\layout.tsx",
+                      "sha256":  "F7F0ED8363130F18488E00275F72AC6A4002F200CC6514751ECF7D1892B0F0E5"
+                  },
+                  {
+                      "path":  "src\\app\\vendor\\layout.tsx",
+                      "sha256":  "6828AA6DAF4DCD11BCA9A9A816144312EFEAE569F1F0B53E31AFA14287BBE88D"
+                  },
+                  {
+                      "path":  "src\\lib\\prisma.ts",
+                      "sha256":  "972F62AB4D59380D3E4028D2A3E7B811899D6B43E16CC3DFFBA76027584D0717"
+                  },
+                  {
+                      "path":  "src\\app\\actions\\vendor.ts",
+                      "sha256":  "9F29A3734B706AB4D40089F3248184B718A477022AA57F67FE8DEB3481F1BC55"
+                  },
+                  {
+                      "path":  "prisma\\schema.prisma",
+                      "sha256":  "41466F167AADDB275E4579902705CECE3A646487ED3576899DB85BC43339D461"
+                  },
+                  {
+                      "path":  "prisma\\seed-bundles.ts",
+                      "sha256":  "8DE83C5AEE94599CA1550219C07F2B4032032BEA27692C3D1AF07407DAD32B43"
+                  }
+              ],
+    "supersedes":  "bundle-feature-v3",
+    "note":  "Consolidated to Bundle model. Restored /bundles/page.tsx. Removed Product.isBundle (schema + vendor.ts). Replaced seed with Bundle-model version. v3 was violated by external script that flipped the storefront to Product.isBundle.",
+    "lockReason":  "Do NOT auto-rewrite these files without explicit approval.",
+    "lockedAt":  "2026-10-31 21:52:37"
+}

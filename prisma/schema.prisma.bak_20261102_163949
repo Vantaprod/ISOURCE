@@ -1,0 +1,668 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  VENDOR
+  BRAND
+  ADMIN
+}
+enum VendorStatus {
+  PENDING
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  REQUIRES_INFORMATION
+  APPROVED
+  REJECTED
+  SUSPENDED
+  CLOSED
+}
+enum BrandStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+enum MembershipRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+enum PaymentProvider {
+  PAYSTACK
+  FLUTTERWAVE
+  BANK_TRANSFER
+  PAY_ON_DELIVERY
+}
+enum FulfillmentStatus {
+  PENDING
+  PROCESSING
+  DISPATCHED
+  DELIVERED
+  FAILED
+  RETURNED
+}
+enum ShipmentCarrier {
+  ISOURCE
+  VENDOR
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  name          String?
+  phone         String?
+  role          UserRole  @default(CUSTOMER)
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  addresses     Address[]
+  cart          Cart?
+  orders        Order[]
+  reviews       ProductReview[]
+  vendor        Vendor?
+  brands        Brand[]
+  memberships   Membership[]
+
+  adminProfile  AdminUser?
+  notifications Notification[]
+  @@index([email])
+}
+
+model Brand {
+  id              String      @id @default(cuid())
+  name            String
+  slug            String      @unique
+  description     String?
+  logoUrl         String?
+  website         String?
+  isFeatured  Boolean     @default(false)
+  status          BrandStatus @default(PENDING)
+  ownerId         String
+  verificationDoc String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  owner           User        @relation(fields: [ownerId], references: [id])
+  products        Product[]
+  memberships     Membership[]
+}
+
+model Membership {
+  id         String         @id @default(cuid())
+  userId     String
+  vendorId   String?
+  brandId    String?
+  role       MembershipRole @default(STAFF)
+  invitedBy  String?
+  acceptedAt DateTime?
+  createdAt  DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor     Vendor?        @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  brand      Brand?         @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([vendorId])
+  @@index([brandId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ALERT
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, isRead])
+}
+
+model Vendor {
+  id             String       @id @default(cuid())
+  userId         String       @unique
+  slug           String       @unique
+  name           String
+  description    String?
+  logoUrl        String?
+  status         VendorStatus @default(DRAFT)
+  isIsource      Boolean      @default(false)
+  location       String?
+  commissionRate Float        @default(10)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products       Product[]
+  ledgerEntries  VendorLedgerEntry[]
+  payouts        Payout[]
+  memberships    Membership[]
+  @@index([status])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  shortName   String
+  description String?
+  icon        String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  name              String
+  shortDescription  String
+  description       String
+  categoryId        String
+  vendorId          String
+  brandId           String?
+  sku               String   @unique
+  priceKobo         Int
+  originalPriceKobo Int?
+  stock             Int      @default(0)
+  specs             Json
+  tags              String[]
+  rating            Float    @default(0)
+  reviewCount       Int      @default(0)
+  isActive          Boolean  @default(true)
+  isFeatured        Boolean  @default(false)
+  approvalStatus    ProductApprovalStatus @default(APPROVED)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  category          Category        @relation(fields: [categoryId], references: [id])
+  vendor            Vendor          @relation(fields: [vendorId], references: [id])
+  brand             Brand?          @relation(fields: [brandId], references: [id])
+  images            ProductImage[]
+  variants          ProductVariant[]
+  reviews           ProductReview[]
+  orderItems        OrderItem[]
+
+  collections       Collection[]     @relation("ProductCollections")
+
+  bundleItems       BundleItem[]
+  cartItems         CartItem[]
+  @@index([categoryId, isActive])
+  @@index([vendorId])
+  @@index([brandId])
+  @@index([slug])
+  @@index([stock])
+  sponsoredCampaigns SponsoredCampaign[]
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  sortOrder Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@index([productId])
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  label     String
+  sku       String   @unique
+  stock     Int      @default(0)
+  priceKobo Int
+  createdAt DateTime @default(now())
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  @@index([productId])
+}
+
+model ProductReview {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([productId])
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  userId     String
+  label      String?
+  firstName  String
+  lastName   String
+  phone      String
+  street     String
+  city       String
+  state      String
+  postalCode String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  variantId String?
+  qty       Int
+  createdAt DateTime @default(now())
+  cart      Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id])
+
+  bundleId  String?
+  bundle    Bundle?         @relation(fields: [bundleId], references: [id])
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+  @@index([cartId])
+}
+
+model Order {
+  id                   String          @id @default(cuid())
+  orderNumber          String          @unique
+  userId               String?
+  guestEmail           String?
+  guestPhone           String?
+  status               OrderStatus     @default(PENDING)
+  paymentStatus        PaymentStatus   @default(PENDING)
+  shippingFirstName    String
+  shippingLastName     String
+  shippingPhone        String
+  shippingStreet       String
+  shippingCity         String
+  shippingState        String
+  shippingPostalCode   String?
+  shippingInstructions String?
+  deliveryMethod       String
+  paymentMethod        PaymentProvider
+  subtotalKobo         Int
+  deliveryKobo         Int
+  discountKobo         Int             @default(0)
+  totalKobo            Int
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  user                 User?           @relation(fields: [userId], references: [id])
+  items                OrderItem[]
+  payments             Payment[]
+  shipments            Shipment[]
+  refunds              Refund[]
+  @@index([userId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                String            @id @default(cuid())
+  orderId           String
+  productId         String?
+  variantId         String?
+  productName       String
+  variantLabel      String?
+  sku               String
+  unitKobo          Int
+  qty               Int
+  lineTotalKobo     Int
+  vendorId          String
+  fulfillmentStatus FulfillmentStatus @default(PENDING)
+  vendorManaged     Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  order             Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product           Product?          @relation(fields: [productId], references: [id])
+
+  bundleId          String?
+  bundle            Bundle?           @relation(fields: [bundleId], references: [id])
+  variant           ProductVariant?   @relation(fields: [variantId], references: [id])
+  @@index([orderId])
+  @@index([vendorId])
+  @@index([fulfillmentStatus])
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  orderId           String
+  provider          PaymentProvider
+  providerReference String?         @unique
+  status            PaymentStatus   @default(PENDING)
+  amountKobo        Int
+  currency          String          @default("NGN")
+  paidAt            DateTime?
+  rawResponse       Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  @@index([orderId])
+  @@index([providerReference])
+  @@index([status])
+}
+
+model Shipment {
+  id              String            @id @default(cuid())
+  orderId         String
+  carrier         ShipmentCarrier   @default(ISOURCE)
+  trackingNumber  String?
+  status          FulfillmentStatus @default(PENDING)
+  dispatchedAt    DateTime?
+  deliveredAt     DateTime?
+  proofOfDelivery String?
+  podCollected    Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  order           Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  @@index([orderId])
+  @@index([trackingNumber])
+}
+
+model DeliveryZone {
+  id            String   @id @default(cuid())
+  state         String
+  city          String?
+  feeKobo       Int
+  freeAboveKobo Int?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  @@index([state])
+}
+
+model SiteSetting {
+  id        String   @id @default("singleton")
+  data      Json
+  updatedAt DateTime @updatedAt
+}
+
+model VendorLedgerEntry {
+  id          String   @id @default(cuid())
+  vendorId    String
+  type        String
+  amountKobo  Int
+  description String
+  orderId     String?
+  payoutId    String?
+  createdAt   DateTime @default(now())
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  payout      Payout?  @relation(fields: [payoutId], references: [id])
+  @@index([vendorId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model Payout {
+  id          String    @id @default(cuid())
+  vendorId    String
+  amountKobo  Int
+  status      String    @default("PENDING")
+  method      String?
+  reference   String?   @unique
+  notes       String?
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  vendor      Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  ledgerEntries VendorLedgerEntry[]
+  @@index([vendorId])
+  @@index([status])
+}
+
+model Refund {
+  id           String    @id @default(cuid())
+  orderId      String
+  orderItemId  String?
+  amountKobo   Int
+  reason       String
+  status       String    @default("REQUESTED")
+  requestedBy  String
+  reviewedBy   String?
+  adminNotes   String?
+  processedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  order        Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  @@index([orderId])
+  @@index([status])
+}
+// ============================================================
+// LAYER 3: Admin, Audit, Storefront Studio
+// ============================================================
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  CATALOGUE_MANAGER
+  VENDOR_MANAGER
+  BRAND_OFFICER
+  ORDER_MANAGER
+  FINANCE_OFFICER
+  SUPPORT_OFFICER
+  MARKETING_MANAGER
+}
+
+enum ProductApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+}
+
+enum HomepageSectionType {
+  FEATURED_CATEGORIES
+  FLASH_DEALS
+  BEST_SELLERS
+  TRENDING
+  RECENT
+  CATEGORY_GRID
+  BRAND_STORES
+}
+
+model AdminUser {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  role        AdminRole @default(ADMIN)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorEmail String
+  actorRole  String
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  @@index([actorId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model HeroBanner {
+  id             String   @id @default(cuid())
+  title          String
+  subtitle       String?
+  description    String?
+  imageUrl       String
+  ctaLabel       String?
+  ctaUrl         String?
+  position       Int      @default(0)
+  isActive       Boolean  @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  campaigns    Campaign[]
+  @@index([isActive, position])
+}
+
+model HomepageSection {
+  id          String               @id @default(cuid())
+  title       String
+  subtitle    String?
+  type        HomepageSectionType
+  position    Int                  @default(0)
+  isVisible   Boolean              @default(true)
+  config      Json?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  @@index([isVisible, position])
+}
+// ============================================================
+// LAYER 3 ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Collections & Campaigns
+// ============================================================
+
+model Collection {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[] @relation("ProductCollections")
+  @@index([slug])
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  themeColor  String   @default("#F07824")
+  bannerId    String?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  banner      HeroBanner? @relation(fields: [bannerId], references: [id])
+  @@index([isActive, startDate, endDate])
+}
+// ============================================================
+// LAYER 3 Ã¢â‚¬â€ Product Ranking & Sponsored Products
+// ============================================================
+
+model RankingConfig {
+  id                 String   @id @default("singleton")
+  relevanceWeight    Float    @default(30)
+  salesWeight        Float    @default(25)
+  conversionWeight   Float    @default(10)
+  ratingWeight       Float    @default(15)
+  stockWeight        Float    @default(10)
+  deliveryWeight     Float    @default(5)
+  completenessWeight Float    @default(5)
+  updatedAt          DateTime @updatedAt
+}
+
+model SponsoredCampaign {
+  id          String   @id @default(cuid())
+  productId   String
+  budgetKobo  Int      @default(0)
+  spendKobo   Int      @default(0)
+  costPerClickKobo Int @default(50)
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0)
+  impressions Int      @default(0)
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@index([isActive, startDate, endDate])
+  @@index([productId])
+}
+// ============================================================
+// Promo Banners (Editable from Admin)
+// ============================================================
+model PromoBanner {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String
+  ctaLabel    String
+  ctaUrl      String
+  imageUrl    String?
+  theme       String   @default("orange") // "orange", "cream", "charcoal"
+  position    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+// ============================================================
+// Bundles (Solar, Holiday, etc.)
+// ============================================================
+model Bundle {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  title             String
+  description       String
+  category          String   @default("solar-power")
+  priceKobo         Int
+  originalPriceKobo Int?
+  imageUrl          String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  vendorId          String?
+  brandId           String?
+  
+  items             BundleItem[]
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+}
+
+model BundleItem {
+  id         String @id @default(cuid())
+  bundleId   String
+  productId  String
+  qty        Int    @default(1)
+  
+  bundle     Bundle  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}

@@ -207,6 +207,8 @@ model Product {
   orderItems        OrderItem[]
 
   collections       Collection[]     @relation("ProductCollections")
+
+  bundleItems       BundleItem[]
   cartItems         CartItem[]
   @@index([categoryId, isActive])
   @@index([vendorId])
@@ -288,6 +290,9 @@ model CartItem {
   createdAt DateTime @default(now())
   cart      Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product   Product         @relation(fields: [productId], references: [id])
+
+  bundleId  String?
+  bundle    Bundle?         @relation(fields: [bundleId], references: [id])
   variant   ProductVariant? @relation(fields: [variantId], references: [id])
   @@index([cartId])
 }
@@ -344,6 +349,9 @@ model OrderItem {
   createdAt         DateTime          @default(now())
   order             Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product           Product?          @relation(fields: [productId], references: [id])
+
+  bundleId          String?
+  bundle            Bundle?           @relation(fields: [bundleId], references: [id])
   variant           ProductVariant?   @relation(fields: [variantId], references: [id])
   @@index([orderId])
   @@index([vendorId])
@@ -544,7 +552,7 @@ model HomepageSection {
   @@index([isVisible, position])
 }
 // ============================================================
-// LAYER 3 ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Collections & Campaigns
+// LAYER 3 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â Collections & Campaigns
 // ============================================================
 
 model Collection {
@@ -576,7 +584,7 @@ model Campaign {
   @@index([isActive, startDate, endDate])
 }
 // ============================================================
-// LAYER 3 Ã¢â‚¬â€ Product Ranking & Sponsored Products
+// LAYER 3 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Product Ranking & Sponsored Products
 // ============================================================
 
 model RankingConfig {
@@ -608,4 +616,411 @@ model SponsoredCampaign {
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   @@index([isActive, startDate, endDate])
   @@index([productId])
+}
+// ============================================================
+// Promo Banners (Editable from Admin)
+// ============================================================
+model PromoBanner {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String
+  ctaLabel    String
+  ctaUrl      String
+  imageUrl    String?
+  theme       String   @default("orange") // "orange", "cream", "charcoal"
+  position    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+// ============================================================
+// Bundles (Solar, Holiday, etc.)
+// ============================================================
+model Bundle {
+  id                String   @id @default(cuid())
+  slug              String   @unique
+  title             String
+  description       String
+  category          String   @default("solar-power")
+  priceKobo         Int
+  originalPriceKobo Int?
+  imageUrl          String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  vendorId          String?
+  brandId           String?
+  
+  items             BundleItem[]
+  cartItems         CartItem[]
+  orderItems        OrderItem[]
+}
+
+model BundleItem {
+  id         String @id @default(cuid())
+  bundleId   String
+  productId  String
+  qty        Int    @default(1)
+  
+  bundle     Bundle  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+// ============================================================
+// FINANCIAL DOMAIN — Payment, Ledger, & Settlement
+// ============================================================
+
+enum PaymentStatus { PENDING PROCESSING SUCCESSFUL FAILED ABANDONED REVERSED PARTIALLY_REFUNDED REFUNDED }
+enum PaymentProvider { PAYSTACK FLUTTERWAVE MONNIFY MANUAL }
+enum PaymentMethod { CARD BANK_TRANSFER USSD OPAY PALMPAY OTHER_WALLET OTHER }
+enum VendorOrderStatus { PENDING CONFIRMED PROCESSING READY_FOR_DISPATCH DISPATCHED DELIVERED COMPLETED CANCELLED DISPUTED }
+enum DeliveryStatus { PENDING PICKED_UP IN_TRANSIT OUT_FOR_DELIVERY DELIVERED FAILED RETURNED DISPUTED }
+enum SettlementStatus { PENDING ELIGIBLE REQUESTED APPROVED PROCESSING SUCCESSFUL FAILED REVERSED ON_HOLD CANCELLED }
+enum RefundStatus { REQUESTED UNDER_REVIEW APPROVED PROCESSING SUCCESSFUL FAILED REJECTED }
+enum LedgerAccountType { ASSET LIABILITY REVENUE EXPENSE EQUITY }
+enum LedgerEntryDirection { DEBIT CREDIT }
+enum LedgerJournalStatus { PENDING POSTED REVERSED }
+enum DisputeStatus { OPEN UNDER_REVIEW RESOLVED REJECTED CLOSED }
+enum WebhookStatus { RECEIVED PROCESSING PROCESSED FAILED IGNORED }
+enum PayoutMode { AUTOMATIC VENDOR_REQUEST ADMIN_APPROVED }
+
+model FinancePayment {
+  id                String         @id @default(cuid())
+  orderId           String         @unique
+  customerId        String
+  provider          PaymentProvider
+  method            PaymentMethod?
+  status            PaymentStatus  @default(PENDING)
+  reference         String         @unique
+  providerReference String?
+  currency          String         @default("NGN")
+  amountKobo        BigInt
+  amountPaidKobo    BigInt         @default(0)
+  checkoutUrl       String?
+  paidAt            DateTime?
+  expiresAt         DateTime?
+  metadata          Json?
+  attempts          PaymentAttempt[]
+  refunds           FinanceRefund[]
+  allocations       PaymentAllocation[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  @@index([customerId, createdAt])
+  @@index([status, createdAt])
+  @@index([provider, providerReference])
+}
+
+model PaymentAttempt {
+  id                String         @id @default(cuid())
+  paymentId         String
+  providerReference String?
+  status            PaymentStatus @default(PENDING)
+  amountKobo        BigInt
+  method            PaymentMethod?
+  failureReason     String?
+  rawResponse       Json?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  payment           FinancePayment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  @@index([paymentId, createdAt])
+}
+
+model PaymentAllocation {
+  id            String @id @default(cuid())
+  paymentId     String
+  vendorOrderId String
+  amountKobo    BigInt
+  currency      String @default("NGN")
+  payment       FinancePayment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  vendorOrder   FinanceVendorOrder @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+  createdAt     DateTime @default(now())
+  @@unique([paymentId, vendorOrderId])
+  @@index([vendorOrderId])
+}
+
+model FinanceVendorOrder {
+  id                String            @id @default(cuid())
+  orderId           String
+  vendorId          String
+  orderNumber       String            @unique
+  status            VendorOrderStatus @default(PENDING)
+  currency          String            @default("NGN")
+  subtotalKobo      BigInt
+  discountKobo      BigInt            @default(0)
+  deliveryFeeKobo   BigInt            @default(0)
+  taxKobo           BigInt            @default(0)
+  totalKobo         BigInt
+  commissionKobo    BigInt            @default(0)
+  gatewayFeeKobo    BigInt            @default(0)
+  vendorNetKobo     BigInt
+  deliveredAt       DateTime?
+  completedAt       DateTime?
+  items             FinanceOrderItem[]
+  delivery          FinanceDelivery?
+  commission        CommissionTransaction?
+  settlementItems   SettlementItem[]
+  refunds           FinanceRefund[]
+  disputes          FinanceDispute[]
+  paymentAllocations PaymentAllocation[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  @@unique([orderId, vendorId])
+  @@index([vendorId, status, createdAt])
+  @@index([orderId])
+}
+
+model FinanceOrderItem {
+  id                String            @id @default(cuid())
+  vendorOrderId     String
+  productId         String
+  categoryId        String
+  productName       String
+  sku               String?
+  quantity          Int
+  unitPriceKobo     BigInt
+  subtotalKobo      BigInt
+  discountKobo      BigInt            @default(0)
+  taxKobo           BigInt            @default(0)
+  commissionRateBps Int
+  commissionKobo    BigInt
+  vendorOrder       FinanceVendorOrder @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+  createdAt         DateTime           @default(now())
+  @@index([productId])
+  @@index([categoryId])
+  @@index([vendorOrderId])
+}
+
+model CategoryCommissionRule {
+  id                String   @id @default(cuid())
+  categoryId        String
+  name              String
+  rateBps           Int
+  active            Boolean  @default(true)
+  effectiveFrom     DateTime
+  effectiveUntil    DateTime?
+  createdBy         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  @@index([categoryId, active, effectiveFrom])
+}
+
+model CommissionTransaction {
+  id                String   @id @default(cuid())
+  vendorOrderId     String   @unique
+  grossSalesKobo    BigInt
+  commissionKobo    BigInt
+  currency          String   @default("NGN")
+  calculation       Json
+  createdAt         DateTime @default(now())
+  vendorOrder       FinanceVendorOrder @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+}
+
+model VendorFinanceAccount {
+  id                String   @id @default(cuid())
+  vendorId          String   @unique
+  currency          String   @default("NGN")
+  bankAccountId     String?
+  active            Boolean  @default(true)
+  suspended         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  bankAccount       VendorBankAccount? @relation(fields: [bankAccountId], references: [id], onDelete: Restrict)
+  ledgerAccounts    LedgerAccount[]
+  settlements       VendorSettlement[]
+  @@index([active, suspended])
+}
+
+model VendorBankAccount {
+  id                String   @id @default(cuid())
+  vendorId          String
+  bankCode          String
+  bankName          String
+  accountNumberEnc  String
+  accountLast4      String
+  accountName       String
+  providerRecipient String?
+  verified          Boolean  @default(false)
+  verifiedAt        DateTime?
+  active            Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  financeAccount    VendorFinanceAccount?
+  @@index([vendorId, active])
+}
+
+model LedgerAccount {
+  id                String            @id @default(cuid())
+  financeAccountId  String?
+  code              String            @unique
+  name              String
+  type              LedgerAccountType
+  currency          String            @default("NGN")
+  financeAccount    VendorFinanceAccount? @relation(fields: [financeAccountId], references: [id], onDelete: Restrict)
+  entries           LedgerEntry[]
+  createdAt         DateTime          @default(now())
+  @@index([financeAccountId, type])
+}
+
+model LedgerJournal {
+  id                String             @id @default(cuid())
+  reference         String             @unique
+  description       String
+  status            LedgerJournalStatus @default(PENDING)
+  currency          String             @default("NGN")
+  sourceType        String
+  sourceId          String
+  idempotencyKey    String             @unique
+  postedAt          DateTime?
+  reversedAt        DateTime?
+  entries           LedgerEntry[]
+  createdAt         DateTime           @default(now())
+  @@index([sourceType, sourceId])
+  @@index([status, createdAt])
+}
+
+model LedgerEntry {
+  id                String             @id @default(cuid())
+  journalId         String
+  accountId         String
+  direction         LedgerEntryDirection
+  amountKobo        BigInt
+  description       String?
+  journal           LedgerJournal @relation(fields: [journalId], references: [id], onDelete: Restrict)
+  account           LedgerAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  createdAt         DateTime @default(now())
+  @@index([journalId])
+  @@index([accountId, createdAt])
+}
+
+model FinanceDelivery {
+  id                String         @id @default(cuid())
+  vendorOrderId     String         @unique
+  status            DeliveryStatus @default(PENDING)
+  courierName       String?
+  trackingNumber    String?
+  dispatchedAt      DateTime?
+  deliveredAt       DateTime?
+  customerConfirmed Boolean       @default(false)
+  confirmedAt       DateTime?
+  proofOfDelivery   String?
+  recipientName     String?
+  deliveryNotes     String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  vendorOrder       FinanceVendorOrder @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+  @@index([status, deliveredAt])
+}
+
+model VendorSettlement {
+  id                String           @id @default(cuid())
+  financeAccountId  String
+  reference         String           @unique
+  status            SettlementStatus @default(PENDING)
+  payoutMode        PayoutMode
+  amountKobo        BigInt
+  currency          String           @default("NGN")
+  bankAccountId     String
+  provider          PaymentProvider
+  providerReference String?
+  requestedAt       DateTime?
+  approvedAt        DateTime?
+  processedAt       DateTime?
+  completedAt       DateTime?
+  approvedBy        String?
+  failureReason     String?
+  financeAccount    VendorFinanceAccount @relation(fields: [financeAccountId], references: [id], onDelete: Restrict)
+  items             SettlementItem[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  @@index([financeAccountId, status])
+  @@index([status, createdAt])
+  @@index([provider, providerReference])
+}
+
+model SettlementItem {
+  id                String @id @default(cuid())
+  settlementId      String
+  vendorOrderId     String
+  amountKobo        BigInt
+  settlement        VendorSettlement @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+  vendorOrder       FinanceVendorOrder @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+  createdAt         DateTime @default(now())
+  @@unique([settlementId, vendorOrderId])
+  @@unique([vendorOrderId])
+}
+
+model FinanceRefund {
+  id                String       @id @default(cuid())
+  paymentId         String
+  vendorOrderId     String?
+  reference         String       @unique
+  amountKobo        BigInt
+  currency          String       @default("NGN")
+  reason            String
+  status            RefundStatus @default(REQUESTED)
+  providerReference String?
+  approvedBy        String?
+  processedAt       DateTime?
+  payment           FinancePayment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  vendorOrder       FinanceVendorOrder? @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  @@index([paymentId, status])
+  @@index([vendorOrderId, status])
+}
+
+model FinanceDispute {
+  id                String        @id @default(cuid())
+  vendorOrderId     String
+  customerId        String
+  reason            String
+  description       String?
+  status            DisputeStatus @default(OPEN)
+  resolution        String?
+  resolvedBy        String?
+  resolvedAt        DateTime?
+  vendorOrder       FinanceVendorOrder @relation(fields: [vendorOrderId], references: [id], onDelete: Restrict)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  @@index([vendorOrderId, status])
+}
+
+model PaymentWebhookEvent {
+  id                String        @id @default(cuid())
+  provider          PaymentProvider
+  eventId           String
+  eventType         String
+  status            WebhookStatus @default(RECEIVED)
+  payload           Json
+  signatureValid    Boolean       @default(false)
+  attempts          Int           @default(0)
+  lastError         String?
+  receivedAt        DateTime      @default(now())
+  processedAt       DateTime?
+  @@unique([provider, eventId], name: "provider_eventId")
+  @@index([status, receivedAt])
+}
+
+model IdempotencyRecord {
+  id                String   @id @default(cuid())
+  key               String   @unique
+  operation         String
+  requestHash       String
+  response          Json?
+  completedAt       DateTime?
+  createdAt         DateTime @default(now())
+}
+
+model FinanceOutboxEvent {
+  id                String   @id @default(cuid())
+  eventType         String
+  aggregateType     String
+  aggregateId       String
+  payload           Json
+  attempts          Int      @default(0)
+  processedAt       DateTime?
+  lastError         String?
+  createdAt         DateTime @default(now())
+  @@index([processedAt, createdAt])
+  @@index([aggregateType, aggregateId])
 }

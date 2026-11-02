@@ -1,0 +1,41 @@
+﻿{
+    "version":  "bundle-feature-v2",
+    "files":  [
+                  {
+                      "path":  "src\\app\\actions\\bundles.ts",
+                      "sha256":  "164D56A9D1FA3C8AE1FFE7BB896C14FF1DC73158841B1F7716C32DA62A2CFE46"
+                  },
+                  {
+                      "path":  "src\\app\\bundles\\page.tsx",
+                      "sha256":  "FD9DE004972AF7F8E42983AC5B06783D6476833A7555BE0DD154EE7B96A2FDC9"
+                  },
+                  {
+                      "path":  "src\\app\\bundles\\AddBundleToCart.tsx",
+                      "sha256":  "A7EB67B11B71BEE6704D3EFD6296EEB590A70D1263336D279873EE7D8B52EFC7"
+                  },
+                  {
+                      "path":  "src\\components\\bundles\\BundleForm.tsx",
+                      "sha256":  "30E6D1FDE7A74D42F59CD6B37DF908F69DD2DB0378162065A3117C3477FC25EF"
+                  },
+                  {
+                      "path":  "src\\context\\CartContext.tsx",
+                      "sha256":  "C96F8C566B27B58B7AE24A06348575E44B9B3BAAD23AE4CF0EA086F9DE506B5F"
+                  },
+                  {
+                      "path":  "src\\app\\admin\\studio\\page.tsx",
+                      "sha256":  "B238BB4F4972015F4C80F9F22078A34C46CAC65BA39F7B539ABD6624F3A627CD"
+                  },
+                  {
+                      "path":  "src\\app\\brand\\layout.tsx",
+                      "sha256":  "F7F0ED8363130F18488E00275F72AC6A4002F200CC6514751ECF7D1892B0F0E5"
+                  },
+                  {
+                      "path":  "src\\app\\vendor\\layout.tsx",
+                      "sha256":  "6828AA6DAF4DCD11BCA9A9A816144312EFEAE569F1F0B53E31AFA14287BBE88D"
+                  }
+              ],
+    "supersedes":  "bundle-feature-v1",
+    "note":  "v1 verification script had a wrong marker for brand/layout.tsx (checked \u0027vendor/bundles/new\u0027 instead of \u0027brand/bundles/new\u0027). Files were always correct. v2 re-verifies with correct markers.",
+    "lockReason":  "Bundle feature fixed \u0026 verified. Do NOT auto-rewrite these files without explicit approval.",
+    "lockedAt":  "2026-10-31 21:35:00"
+}
