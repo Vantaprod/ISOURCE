@@ -1,5 +1,5 @@
-import { CustomSelect } from "@/components/ui/CustomSelect";
 "use client";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { useState, useTransition } from "react";
 import { updateVendorStatus } from "./actions";
 import type { VendorStatus } from "@prisma/client";
@@ -23,9 +23,7 @@ export function VendorRow({ vendor }: { vendor: { id: string; name: string; emai
       <td className="px-5 py-4 font-medium">{vendor.productCount}</td>
       <td className="px-5 py-4 text-muted">{vendor.location}</td>
       <td className="px-5 py-4">
-        <CustomSelect options={[{label:"PENDING", value:"PENDING"},{label:"APPROVED", value:"APPROVED"},{label:"REJECTED", value:"REJECTED"},{label:"SUSPENDED", value:"SUSPENDED"}]}  value={currentStatus} onChange={handleChange} disabled={isPending} className={`h-8 rounded border border-border px-2 text-xs font-bold ${currentStatus === "APPROVED" ? "bg-success/10 text-success" : currentStatus === "SUSPENDED" || currentStatus === "REJECTED" ? "bg-danger/10 text-danger" : "bg-warning/10 text-warning"}`}>
-          {STATUSES.map((s) => )}
-        />
+        <CustomSelect  options={[{label:"PENDING", value:"PENDING"},{label:"APPROVED", value:"APPROVED"},{label:"REJECTED", value:"REJECTED"},{label:"SUSPENDED", value:"SUSPENDED"}]}  value={currentStatus} onChange={handleChange} disabled={isPending} className={`h-8 rounded border border-border px-2 text-xs font-bold ${currentStatus === "APPROVED" ? "bg-success/10 text-success" : currentStatus === "SUSPENDED" || currentStatus === "REJECTED" ? "bg-danger/10 text-danger" : "bg-warning/10 text-warning"}`} />
       </td>
     </tr>
   );
