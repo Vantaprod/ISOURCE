@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic";
+
 import { useActionState } from "react";
 import Link from "next/link";
 import { ChevronLeft, AlertTriangle } from "lucide-react";

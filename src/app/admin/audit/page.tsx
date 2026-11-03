@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/prisma";
 import { ShieldAlert } from "lucide-react";
 import { format } from "date-fns";

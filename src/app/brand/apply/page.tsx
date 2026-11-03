@@ -1,4 +1,6 @@
 "use client";
+export const dynamic = "force-dynamic";
+
 import { useState } from "react";
 import { Building2, CheckCircle2, ArrowRight } from "lucide-react";
 import { registerBrand } from "./actions";

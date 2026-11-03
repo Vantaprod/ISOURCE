@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getRankingConfig } from "@/lib/ranking";
 import { RankingForm } from "./RankingForm";
 

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getAllProducts } from "@/lib/catalog";
 import { CartClient } from "./CartClient";
 export default async function CartPage() {

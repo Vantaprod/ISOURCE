@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
-const secretKey = process.env.AUTH_SECRET || "default-secret-change-me-in-production";
+const secretKey = process.env.AUTH_SECRET || "isource-fallback-secret-key-do-not-use-in-prod-1234567890";
 const key = new TextEncoder().encode(secretKey);
 const SESSION_COOKIE = "isource_session";
 

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Heart, Truck, Wallet, ChevronRight, Package, RotateCcw, MapPin, HelpCircle, Bell } from "lucide-react";

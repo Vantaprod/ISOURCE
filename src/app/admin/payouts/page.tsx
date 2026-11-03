@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/prisma";
 import { formatNairaShort } from "@/lib/format";
 import { PayoutClient } from "./PayoutClient";

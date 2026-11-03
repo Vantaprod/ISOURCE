@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { prisma } from "@/lib/prisma";
 import { CreateSponsoredForm } from "./CreateSponsoredForm";
 import { SponsoredRow } from "./SponsoredRow";
