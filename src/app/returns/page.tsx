@@ -1,5 +1,5 @@
+"use client";
 export const dynamic = "force-dynamic";
-
 import { CheckCircle2, XCircle } from "lucide-react";
 
 export default function ReturnsPage() {
