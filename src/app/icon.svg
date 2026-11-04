@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <!-- Outer green ring -->
+  <circle cx="128" cy="128" r="120" fill="#3EAE5C"/>
+  <!-- Orange ring -->
+  <circle cx="128" cy="128" r="105" fill="#E89B3C"/>
+  <!-- Purple/magenta ring -->
+  <circle cx="128" cy="128" r="88" fill="#C0299E"/>
+  <!-- Cyan ring -->
+  <circle cx="128" cy="128" r="70" fill="#2CB8E0"/>
+  <!-- Dark blue ring -->
+  <circle cx="128" cy="128" r="53" fill="#3E7CB5"/>
+  <!-- Maroon ring -->
+  <circle cx="128" cy="128" r="38" fill="#8B2F3D"/>
+  <!-- Center white -->
+  <circle cx="128" cy="128" r="24" fill="#F5F5F5"/>
+  
+  <!-- White price tag in center -->
+  <path d="M 112 118 L 138 118 Q 144 118 144 124 L 144 138 Q 144 144 138 144 L 120 144 L 108 132 L 108 124 Q 108 118 112 118 Z" fill="#FFFFFF" stroke="#7A7A7A" stroke-width="1.5"/>
+  <!-- Tag hole -->
+  <circle cx="138" cy="124" r="2" fill="#7A7A7A"/>
+</svg>

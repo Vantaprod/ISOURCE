@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Menu, Search, ShoppingCart, Heart, User, LogOut, Store, Bell, ChevronDown, ShieldAlert, MessageSquare, Settings } from "lucide-react";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { CategoryNav } from "./CategoryNav";
 import { MobileMenu } from "./MobileMenu";
@@ -120,7 +121,8 @@ export function Header({ user }: { user: SessionPayload | null }) {
                   ) : (
                     <Link href="/login" className="flex items-center gap-1.5 px-2 py-1 text-sm font-medium hover:text-primary"><User size={20} /><span className="hidden lg:inline">Sign In</span></Link>
                   )}
-                  <Link href="/wishlist" className="relative flex items-center gap-2 px-2 py-1 text-sm hover:text-primary"><Heart size={20} />{wishCount > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-charcoal text-white text-[10px] flex items-center justify-center font-bold px-1">{wishCount}</span>}</Link>
+                  <NotificationBell initialCount={0} />
+          <Link href="/wishlist" className="relative flex items-center gap-2 px-2 py-1 text-sm hover:text-primary"><Heart size={20} />{wishCount > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-charcoal text-white text-[10px] flex items-center justify-center font-bold px-1">{wishCount}</span>}</Link>
                   <Link href="/cart" className="relative flex items-center gap-2 px-2 py-1 text-sm hover:text-primary"><ShoppingCart size={20} />{itemCount > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-primary text-white text-[10px] flex items-center justify-center font-bold px-1">{itemCount}</span>}</Link>
                 </>
               )}

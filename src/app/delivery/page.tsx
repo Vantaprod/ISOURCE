@@ -29,7 +29,7 @@ export default function DeliveryPage() {
             <div>
               <h2 className="font-bold text-lg mb-1">Delivery Fees</h2>
               <ul className="list-disc list-inside text-sm text-charcoal/80 space-y-1">
-                <li><strong>Home Delivery:</strong> ₦2,500 (Free on orders over ₦50,000)</li>
+                <li><strong>Home Delivery:</strong> ₦2,500 (Free on orders over ₦10,000,000)</li>
                 <li><strong>Pickup Station:</strong> ₦1,000</li>
                 <li><strong>Express Delivery:</strong> ₦5,000</li>
               </ul>

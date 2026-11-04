@@ -53,9 +53,9 @@ export default function ContactPage() {
           <div className="rounded-xl border border-border bg-white p-6">
             <h3 className="font-bold mb-4">Contact Information</h3>
             <ul className="space-y-4 text-sm">
-              <li className="flex gap-3"><Mail className="text-primary flex-shrink-0" size={18} /><div><p className="font-medium">Email</p><p className="text-muted">support@isource.ng</p></div></li>
-              <li className="flex gap-3"><Phone className="text-primary flex-shrink-0" size={18} /><div><p className="font-medium">Phone</p><p className="text-muted">+234 800 000 0000</p></div></li>
-              <li className="flex gap-3"><MapPin className="text-primary flex-shrink-0" size={18} /><div><p className="font-medium">Head Office</p><p className="text-muted">Victoria Island, Lagos, Nigeria</p></div></li>
+              <li className="flex gap-3"><Mail className="text-primary flex-shrink-0" size={18} /><div><p className="font-medium">Email</p><p className="text-muted">hello@isourceafricagroup.com</p></div></li>
+              <li className="flex gap-3"><Phone className="text-primary flex-shrink-0" size={18} /><div><p className="font-medium">Phone</p><p className="text-muted">+2348146566786</p></div></li>
+              <li className="flex gap-3"><MapPin className="text-primary flex-shrink-0" size={18} /><div><p className="font-medium">Head Office</p><p className="text-muted">21 Ogunusi road, Ogba, Ikeja, Lagos</p></div></li>
             </ul>
           </div>
           <div className="rounded-xl border border-border bg-surface p-6">

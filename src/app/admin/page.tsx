@@ -1,3 +1,5 @@
+import { TrafficStats } from "@/components/admin/TrafficStats";
+import { VendorStats } from "@/components/admin/VendorStats";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
@@ -117,7 +119,7 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard icon={Users} label="Total Customers" value={customerCount} />
         <StatCard icon={Store} label="Registered Vendors" value={vendorCount} />
-        <StatCard icon={Clock} label="Pending Vendor Apps" value={pendingVendorCount} />
+        <StatCard icon={Clock} label="PENDING VENDOR APPLICATIONS" value={pendingVendorCount} />
         <StatCard icon={ShieldCheck} label="Verified Brands" value={brandCount} />
         <StatCard icon={ShieldCheck} label="Pending Brands" value={pendingBrandCount} />
       </div>
@@ -132,7 +134,11 @@ export default async function AdminDashboard() {
 
       <div className="grid lg:grid-cols-[1.5fr_1fr_1fr] gap-4">
         <div className="rounded-xl border border-border bg-white p-5">
-          <div className="flex items-center justify-between mb-6">
+                
+
+      
+
+      <div className="flex items-center justify-between mb-6">
             <h2 className="font-bold text-charcoal text-sm flex items-center gap-2"><Activity size={16} className="text-primary"/> Sales Overview</h2>
             <span className="text-xs text-muted">Last 7 days</span>
           </div>

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Image as ImageIcon, Layers, Sparkles, Package } from "lucide-react";
+import { Image as ImageIcon, Layers, Sparkles, Package , ShoppingBag , ShieldCheck , Activity } from "lucide-react";
 
 export default function StudioHomePage() {
   return (

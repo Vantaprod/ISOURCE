@@ -1,3 +1,4 @@
+import { generateFinanceDeliveriesForOrder } from "@/app/actions/generate-deliveries";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
@@ -50,6 +51,9 @@ export async function POST(req: NextRequest) {
           where: { id: settlement.id },
           data: { status: "SUCCESSFUL", completedAt: new Date() },
         });
+
+    // Trigger delivery generation (Phase 8)
+    await generateFinanceDeliveriesForOrder(payment.orderId);
 
         // 2. Post final ledger journal: In Transit → Gateway Clearing
         const accounts = await prisma.ledgerAccount.findMany({

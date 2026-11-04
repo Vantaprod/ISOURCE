@@ -1,0 +1,84 @@
+import Link from "next/link";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { Hero } from "@/components/home/Hero";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { CategoryStrip } from "@/components/home/CategoryStrip";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { SolarSubCategories } from "@/components/home/SolarSubCategories";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { FeaturedBrands } from "@/components/home/FeaturedBrands";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { OccasionOffersSection } from "@/components/home/OccasionOffersSection";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { FlashDealsSection } from "@/components/home/FlashDealsSection";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { PromoBanners } from "@/components/home/PromoBanners";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { TrustBar } from "@/components/home/TrustBar";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { Newsletter } from "@/components/home/Newsletter";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { ProductCard } from "@/components/product/ProductCard";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import { getProductsByTag } from "@/lib/catalog";
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+import type { ProductWithVendor } from "@/lib/catalog";
+
+import { BlackFridayHero } from "@/components/home/BlackFridayHero";
+import { getActiveCampaign } from "@/lib/campaign";
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const activeCampaign = await getActiveCampaign();
+
+  let flashDeals: ProductWithVendor[] = [];
+  let bestSellers: ProductWithVendor[] = [];
+
+  try {
+    flashDeals = await getProductsByTag("flash-deal");
+    bestSellers = await getProductsByTag("best-seller");
+  } catch (error) {
+    console.error("Failed to load products:", error);
+  }
+
+  return (
+    <>
+        {activeCampaign?.slug === "black-friday" ? (
+    <BlackFridayHero />
+  ) : (
+    <Hero />
+  )}
+      <CategoryStrip />
+      <SolarSubCategories />
+      <FeaturedBrands />
+      <OccasionOffersSection />
+      <FlashDealsSection products={flashDeals} />
+      {await PromoBanners()}
+      
+      <section className="mx-auto max-w-[1440px] px-4 py-6">
+        <div className="flex items-end justify-between mb-4">
+          <h2 className="text-xl font-bold text-charcoal">Best Sellers</h2>
+          <Link href="/search" className="text-sm font-semibold text-primary hover:underline">View All →</Link>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {bestSellers.slice(0, 5).map(p => <ProductCard key={p.id} product={p} />)}
+        </div>
+      </section>
+
+      <TrustBar />
+      <Newsletter />
+    </>
+  );
+}

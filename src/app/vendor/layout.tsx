@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import Link from "next/link";
-import { LayoutDashboard, Package, ShoppingBag, DollarSign, Plus, Sun } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, DollarSign, Plus, Sun , Store } from "lucide-react";
 
 export default async function VendorLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -24,10 +24,10 @@ export default async function VendorLayout({ children }: { children: React.React
               </div>
               <ul className="py-2 text-sm text-white/70">
                 <li><Link href="/vendor" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-primary bg-primary/20 text-white font-medium"><LayoutDashboard size={18} /> Dashboard</Link></li>
-                <li><Link href="/vendor/products" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><Package size={18} /> Products</Link></li>
+                <li><Link href="/vendor/products" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><Package size={18} /> Products</Link></li>`n            <li><Link href="/vendor/store" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><Store size={18} /> Manage Storefront</Link></li>
                 <li><Link href="/vendor/bundles/new" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><Plus size={18} /> Create Bundle</Link></li>
                 <li><Link href="/vendor/orders" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><ShoppingBag size={18} /> Orders</Link></li>
-                <li><Link href="/vendor/finance" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><DollarSign size={18} /> Earnings</Link></li>
+                <li><Link href="/vendor/finance" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><DollarSign size={18} /> Earnings</Link></li>`n            <li><Link href="/vendor/settings" className="flex items-center gap-3 px-5 py-3 hover:bg-white/10 hover:text-white border-l-4 border-transparent"><UserCog size={18} /> Settings</Link></li>
               </ul>
               <div className="p-4 mt-4">
                 <div className="rounded-xl p-5 bg-gradient-to-br from-primary to-orange-600 relative overflow-hidden">

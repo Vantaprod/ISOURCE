@@ -13,7 +13,7 @@ export default async function AllBrandsPage() {
     <div className="mx-auto max-w-[1440px] px-4 py-8 min-h-screen">
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold text-charcoal">All Brand Stores</h1>
-        <p className="text-sm text-muted mt-2">Discover official stores from top manufacturers.</p>
+        <p className="text-sm text-muted mt-2">Discover Verified Vendors from top manufacturers.</p>
       </div>
 
       {brands.length === 0 ? (

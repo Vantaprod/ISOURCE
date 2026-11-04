@@ -1,42 +1,37 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 
-export async function logAudit(action: string, entityType: string, entityId?: string, metadata?: Record<string, unknown>) {
+interface AuditInput {
+  action: string;
+  entityType: string;
+  entityId: string;
+  vendorId: string;
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Write an audit log entry.
+ * Never throws — logging failures should not break business operations.
+ */
+export async function logAudit(input: AuditInput): Promise<void> {
   try {
     const session = await getSession();
-    if (!session) return;
-    await prisma.auditLog.create({
+    if (!session) {
+      // Anonymous action (e.g. during seed) — skip audit
+      return;
+    }
+    await prisma.storeAuditLog.create({
       data: {
         actorId: session.userId,
-        actorEmail: session.email,
         actorRole: session.role,
-        action,
-        entityType,
-        entityId,
-        metadata: metadata as Record<string, unknown> | undefined,
+        action: input.action,
+        entityType: input.entityType,
+        entityId: input.entityId,
+        vendorId: input.vendorId,
+        metadata: (input.metadata as any) ?? null,
       },
     });
   } catch (err) {
-    console.error("Audit log failed:", err);
+    console.error("[AUDIT] Failed to write log:", err);
   }
-}
-
-export async function requireAdmin() {
-  const session = await getSession();
-  if (!session || session.role !== "ADMIN") throw new Error("Unauthorized");
-  return session;
-}
-
-export async function requireAdminRole(allowed: string[]) {
-  const session = await requireAdmin();
-  if (session.role === "ADMIN" && session.email) {
-    // Check AdminUser record for granular role
-    const admin = await prisma.adminUser.findUnique({ where: { userId: session.userId } });
-    if (admin) {
-      if (admin.role === "SUPER_ADMIN") return { session, admin };
-      if (!allowed.includes(admin.role)) throw new Error("Insufficient permissions");
-      return { session, admin };
-    }
-  }
-  return { session, admin: null };
 }

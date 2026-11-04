@@ -4,6 +4,8 @@ import { searchProducts } from "@/lib/catalog";
 import type { SortKey } from "@/types/catalog";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { cn } from "@/lib/cn";
+import { VENDORS } from "@/data/vendors";
+import { SponsoredSlot } from "@/components/advertising/SponsoredSlot";
 
 interface Props { searchParams: Promise<Record<string, string | string[] | undefined>>; }
 function firstString(v: string | string[] | undefined): string | undefined { return Array.isArray(v) ? v[0] : v; }
@@ -12,6 +14,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [{ key: "relevance", label: "Relevance" }, { key: "price-asc", label: "Price: low to high" }, { key: "price-desc", label: "Price: high to low" }, { key: "newest", label: "Newest" }, { key: "popular", label: "Popular" }];
 
 export default async function SearchPage({ searchParams }: Props) {
+  const resolvedSearchParams = await searchParams;
+  const selectedBrand = resolvedSearchParams.brand as string || '';
   const sp = await searchParams;
   const q = firstString(sp.q)?.trim() ?? "";
   const sort = (firstString(sp.sort) as SortKey | undefined) ?? "relevance";
@@ -44,9 +48,21 @@ export default async function SearchPage({ searchParams }: Props) {
           <select name="sort" defaultValue={sort} className="h-10 rounded-md border border-border bg-white px-3 text-sm outline-none focus:border-primary">
             {SORT_OPTIONS.map((o) => (<option key={o.key} value={o.key}>{o.label}</option>))}
           </select>
-          <button type="submit" className="h-10 px-6 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary-hover">Search</button>
+          <select name="brand" defaultValue={selectedBrand} className="h-10 rounded border border-border px-3 text-sm bg-white outline-none">
+                <option value="">All Brands</option>
+                {VENDORS.map((b: any) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+              <button type="submit" className="h-10 px-6 rounded-md bg-primary text-white text-sm font-medium hover:bg-primary-hover">Search</button>
         </form>
       </div>
+
+          <SponsoredSlot
+        placementSlug="search-top"
+        keywords={q ? [q] : []}
+        limit={4}
+      />
 
       <ProductGrid products={result.items} />
 

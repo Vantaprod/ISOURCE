@@ -25,7 +25,7 @@ export default function NewProductPage() {
         </div>
       )}
 
-      <ProductForm formAction={formAction} isPending={isPending} categories={CATEGORIES} />
+      <ProductForm formAction={formAction} isPending={isPending} /* categories={categories} */ /* brands={brands} */ />
     </div>
   );
 }

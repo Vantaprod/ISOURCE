@@ -9,7 +9,7 @@ const faqs = [
   { q: "How do I return an item?", a: "You can request a return within 7 days of delivery via your Account → Orders page. Items must be in their original condition." },
   { q: "Are the products original?", a: "We work only with verified vendors. If you suspect a counterfeit item, please contact support immediately for a full refund." },
   { q: "What payment methods do you accept?", a: "We accept Paystack (cards, bank, USSD), Flutterwave, direct bank transfer, and pay on delivery." },
-  { q: "How do I contact support?", a: "You can reach us via the Contact Us page, email support@isource.ng, or call +234 800 000 0000 during business hours." },
+  { q: "How do I contact support?", a: "You can reach us via the Contact Us page, email hello@isourceafricagroup.com, or call +2348146566786 during business hours." },
 ];
 
 export default function HelpPage() {

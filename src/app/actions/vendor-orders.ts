@@ -1,4 +1,5 @@
 "use server";
+import { notify } from "@/lib/notify";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { postJournal } from "@/modules/ledger/ledger.service";
@@ -53,7 +54,23 @@ export async function markVendorOrderDelivered(vendorOrderId: string, trackingNu
     ],
   });
 
-  revalidatePath("/vendor/orders");
+  // Notify the customer that their order was delivered
+    try {
+      const vendorOrder = await prisma.financeVendorOrder.findUnique({
+        where: { id: vendorOrderId },
+        include: { order: true },
+      });
+      if (vendorOrder?.order?.userId) {
+        await notify({
+          userId: vendorOrder.order.userId,
+          title: "Order Delivered 📦",
+          message: `Your order ${vendorOrder.orderNumber} has been delivered. Please confirm receipt in your account.`,
+          type: "ORDER",
+          linkUrl: `/account/orders/${vendorOrder.orderId}`,
+        });
+      }
+    } catch (e) { console.error("Customer notify failed:", e); }
+    revalidatePath("/vendor/orders");
   revalidatePath("/vendor/finance");
   return { success: true };
 }
@@ -83,7 +100,23 @@ export async function updateItemFulfillment(itemId: string, newStatus: string) {
     data: { status: newStatus as any },
   });
 
-  revalidatePath("/vendor/orders");
+  // Notify the customer that their order was delivered
+    try {
+      const vendorOrder = await prisma.financeVendorOrder.findUnique({
+        where: { id: vendorOrderId },
+        include: { order: true },
+      });
+      if (vendorOrder?.order?.userId) {
+        await notify({
+          userId: vendorOrder.order.userId,
+          title: "Order Delivered 📦",
+          message: `Your order ${vendorOrder.orderNumber} has been delivered. Please confirm receipt in your account.`,
+          type: "ORDER",
+          linkUrl: `/account/orders/${vendorOrder.orderId}`,
+        });
+      }
+    } catch (e) { console.error("Customer notify failed:", e); }
+    revalidatePath("/vendor/orders");
   revalidatePath("/vendor/finance");
   return { success: true };
 }

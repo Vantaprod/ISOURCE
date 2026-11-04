@@ -1,3 +1,6 @@
+import { CookieConsent } from "@/components/layout/CookieConsent";
+import { FestivalTeaser } from "@/components/layout/FestivalTeaser";
+import { VisitTracker } from "@/components/analytics/VisitTracker";
 import type { Metadata } from "next";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
@@ -10,7 +13,6 @@ import { getSession, type SessionPayload } from "@/lib/session";
 import { getActiveCampaign, darkenColor } from "@/lib/campaign";
 
 export const metadata: Metadata = {
-  
   
   title: { default: "Isource — Nigeria's multi-vendor marketplace", template: "%s · Isource" },
   description: "Shop electronics, phones, solar, home, groceries, fashion and more on Isource — Nigeria's trusted multi-vendor marketplace.",
@@ -37,6 +39,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           "--theme-cta-hover": themeColorHover 
         } as React.CSSProperties}
       >
+        <FestivalTeaser />
+        
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -59,6 +63,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </WishlistProvider>
           </CartProvider>
         </CampaignProvider>
+              
+              <VisitTracker />
+              <CookieConsent />
       </body>
     </html>
   );

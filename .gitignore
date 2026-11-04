@@ -54,3 +54,6 @@ next-env.d.ts
 *.targetbak
 .backups/
 .prisma/
+
+# Isource lock files
+.locked/

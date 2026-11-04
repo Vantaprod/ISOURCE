@@ -54,3 +54,13 @@ select option {
   background-color: white;
   color: #1e293b;
 }
+/* ==========================================
+   HIDE SCROLLBARS (For horizontal mobile sliders)
+   ========================================== */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

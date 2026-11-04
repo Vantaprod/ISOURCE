@@ -101,7 +101,7 @@ export function HeroSlider({ banners }: { banners: HeroBanner[] }) {
 
             {/* Dots Indicator */}
             {banners.length > 1 && (
-              <div className="absolute bottom-4 left-0 right-0 z-30 flex justify-center gap-2">
+              <div className="hidden md:flex absolute bottom-4 left-0 right-0 z-30 flex justify-center gap-2">
                 {banners.map((_, idx) => (
                   <button 
                     key={idx} 

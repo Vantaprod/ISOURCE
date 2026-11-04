@@ -1,64 +1,44 @@
-export const dynamic = "force-dynamic";
-
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { VendorOrderRow } from "./VendorOrderRow";
+import { Package } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default async function VendorOrdersPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const vendor = await prisma.vendor.findUnique({
-    where: { userId: session.userId },
-  });
-  if (!vendor) redirect("/account");
+  const vendor = await prisma.vendor.findUnique({ where: { userId: session.userId } });
+  if (!vendor) redirect("/vendor");
 
-  // Fetch only the OrderItems that belong to this vendor
-  const items = await prisma.orderItem.findMany({
+  const orders = await prisma.financeVendorOrder.findMany({
     where: { vendorId: vendor.id },
-    include: { order: true },
+    include: { items: true, delivery: true },
     orderBy: { createdAt: "desc" },
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-2xl font-bold">My Orders</h1>
-        <p className="text-sm text-muted">Manage fulfillment for your products.</p>
+        <h1 className="text-2xl font-bold text-charcoal">My Orders</h1>
+        <p className="text-sm text-muted">Manage fulfillment and update delivery statuses.</p>
       </div>
 
-      <div className="rounded-lg border border-border bg-white overflow-hidden">
-        {items.length === 0 ? (
-          <p className="p-10 text-sm text-muted text-center">No orders yet.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-surface text-muted text-xs uppercase">
-                <tr>
-                  <th className="px-4 py-3">Order</th>
-                  <th className="px-4 py-3">Product</th>
-                  <th className="px-4 py-3">Qty</th>
-                  <th className="px-4 py-3">Total</th>
-                  <th className="px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {items.map((item) => (
-                  <VendorOrderRow key={item.id} item={{
-                    id: item.id,
-                    orderNumber: item.order.orderNumber,
-                    productName: item.productName,
-                    qty: item.qty,
-                    lineTotalKobo: item.lineTotalKobo,
-                    status: item.fulfillmentStatus
-                  }} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {orders.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border bg-white p-12 text-center">
+          <Package size={40} className="mx-auto text-muted mb-4" />
+          <h2 className="text-lg font-bold text-charcoal mb-2">No orders yet</h2>
+          <p className="text-sm text-muted">When customers purchase your products, they will appear here.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <VendorOrderRow key={order.id} order={order} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

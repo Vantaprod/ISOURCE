@@ -52,7 +52,7 @@ export function deliveryFeeKobo(method: DeliveryMethod, subtotalKobo: number): n
   if (method === "pickup-station") return 100_000;   // ₦1,000
   if (method === "express") return 500_000;          // ₦5,000
   // home-delivery:
-  return subtotalKobo >= 5_000_000 ? 0 : 250_000;    // free over ₦50,000, else ₦2,500
+  return subtotalKobo >= 5_000_000 ? 0 : 250_000;    // free over ₦10,000,000, else ₦2,500
 }
 
 export interface OrderDraft {

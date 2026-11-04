@@ -1,115 +1,129 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { PaystackProvider } from "@/modules/providers/paystack/paystack.adapter";
 import { calculateCommission } from "@/modules/commissions/commission.service";
-import { redirect } from "next/navigation";
+import { getShippingQuote } from "@/app/actions/shipping";
+import { createHash } from "node:crypto";
 
-const paystack = new PaystackProvider();
-
-// The frontend will send an array of cart items
 interface CartItemInput {
   productId: string;
   quantity: number;
-  vendorId: string;
   unitPriceKobo: number;
-  categoryId: string;
 }
 
-export async function createCheckout(items: CartItemInput[]) {
+export async function createCheckout(
+  items: CartItemInput[],
+  customerState: string,
+  isPickup: boolean,
+  pickupStationId: string | null
+) {
   const session = await getSession();
   if (!session) throw new Error("Unauthorized");
 
   const customer = await prisma.user.findUnique({ where: { id: session.userId } });
   if (!customer) throw new Error("User not found");
 
-  // 1. Calculate total payment amount
-  let totalAmountKobo = 0n;
-  items.forEach(item => {
-    totalAmountKobo += BigInt(item.unitPriceKobo) * BigInt(item.quantity);
+  // Fetch real vendorId + categoryId from DB — never trust frontend
+  const productIds = items.map(i => i.productId);
+  const dbProducts = await prisma.product.findMany({
+    where: { id: { in: productIds } },
+    select: { id: true, vendorId: true, categoryId: true, weightGrams: true, lengthCm: true, widthCm: true, heightCm: true, name: true }
   });
+  const pMap = new Map(dbProducts.map(p => [p.id, p]));
 
-  // 2. Generate unique payment reference
-  const paymentReference = `ISRC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  const orderId = `ORD-${Date.now()}`; // In a real app, create the main Order record here
+  // Group by real vendor
+  const byVendor = new Map<string, CartItemInput[]>();
+  for (const item of items) {
+    const prod = pMap.get(item.productId);
+    if (!prod) throw new Error(`Product ${item.productId} not found`);
+    const arr = byVendor.get(prod.vendorId) || [];
+    arr.push(item);
+    byVendor.set(prod.vendorId, arr);
+  }
 
-  // 3. Create the FinancePayment record
-  const payment = await prisma.financePayment.create({
+  let totalProductKobo = 0n;
+  let totalShippingKobo = 0n;
+  const vendorPlan: any[] = [];
+
+  for (const [vendorId, vItems] of byVendor.entries()) {
+    const subtotal = vItems.reduce((s, i) => s + BigInt(i.unitPriceKobo) * BigInt(i.quantity), 0n);
+    const shipItems = vItems.map(i => ({
+      productId: i.productId,
+      quantity: i.quantity,
+      weightGrams: pMap.get(i.productId)?.weightGrams ?? 500,
+      lengthCm: pMap.get(i.productId)?.lengthCm ?? 10,
+      widthCm: pMap.get(i.productId)?.widthCm ?? 10,
+      heightCm: pMap.get(i.productId)?.heightCm ?? 10,
+    }));
+    const quote = await getShippingQuote({ items: shipItems, customerState, isPickup });
+    if ("error" in quote) throw new Error(`Shipping for ${vendorId}: ${quote.error}`);
+    const shipFee = BigInt(quote.quote.feeKobo);
+    totalProductKobo += subtotal;
+    totalShippingKobo += shipFee;
+    vendorPlan.push({ vendorId, items: vItems, subtotal, shipFee });
+  }
+
+  const grandTotal = totalProductKobo + totalShippingKobo;
+  const paymentRef = `ISRC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const orderId = `ORD-${Date.now()}`;
+
+  await prisma.financePayment.create({
     data: {
       orderId,
       customerId: customer.id,
       provider: "PAYSTACK",
       status: "PENDING",
-      reference: paymentReference,
-      amountKobo: totalAmountKobo,
+      reference: paymentRef,
+      amountKobo: grandTotal,
       currency: "NGN",
-    }
+    },
   });
 
-  // 4. Group items by vendor to create Vendor Orders
-  const vendors = [...new Set(items.map(i => i.vendorId))];
-
-  for (const vendorId of vendors) {
-    const vendorItems = items.filter(i => i.vendorId === vendorId);
-    let vendorSubtotalKobo = 0n;
-
-    // Calculate vendor subtotal
-    vendorItems.forEach(item => {
-      vendorSubtotalKobo += BigInt(item.unitPriceKobo) * BigInt(item.quantity);
-    });
-
-    // Create the FinanceVendorOrder
-    const vendorOrder = await prisma.financeVendorOrder.create({
+  for (const vp of vendorPlan) {
+    const vo = await prisma.financeVendorOrder.create({
       data: {
         orderId,
-        vendorId,
-        orderNumber: `VO-${Date.now()}-${vendorId.slice(0,4)}`,
+        vendorId: vp.vendorId,
+        orderNumber: `VO-${Date.now()}-${vp.vendorId.slice(0, 4)}`,
         status: "PENDING",
-        subtotalKobo: vendorSubtotalKobo,
-        totalKobo: vendorSubtotalKobo,
-        vendorNetKobo: 0n, // Will be updated after payment verification
-      }
+        subtotalKobo: vp.subtotal,
+        totalKobo: vp.subtotal + vp.shipFee,
+        shippingFeeKobo: vp.shipFee,
+        deliveryMethod: isPickup ? "PICKUP" : "HOME_DELIVERY",
+        pickupStationId: isPickup ? pickupStationId : null,
+        vendorNetKobo: 0n,
+      },
     });
 
-    // Create individual OrderItems and calculate commission
-    for (const item of vendorItems) {
+    for (const item of vp.items) {
+      const prod = pMap.get(item.productId)!;
       const itemSubtotal = BigInt(item.unitPriceKobo) * BigInt(item.quantity);
-      const { rateBps, commissionKobo } = await calculateCommission(item.categoryId, itemSubtotal);
-
+      const { rateBps, commissionKobo } = await calculateCommission(prod.categoryId, itemSubtotal);
       await prisma.financeOrderItem.create({
         data: {
-          vendorOrderId: vendorOrder.id,
+          vendorOrderId: vo.id,
           productId: item.productId,
-          categoryId: item.categoryId,
-          productName: "Product", // Ideally fetch actual name from DB
+          categoryId: prod.categoryId,
+          productName: prod.name,
           quantity: item.quantity,
           unitPriceKobo: BigInt(item.unitPriceKobo),
           subtotalKobo: itemSubtotal,
           commissionRateBps: rateBps,
-          commissionKobo: commissionKobo,
-        }
+          commissionKobo,
+        },
       });
     }
   }
 
-  // 5. Initialize Paystack
-  const init = await paystack.initializePayment({
-    amountKobo: totalAmountKobo,
-    customerEmail: customer.email,
-    customerName: customer.name || "Customer",
-    reference: paymentReference,
-    description: `Isource Order ${orderId}`
+  // Record policy acceptance
+  await prisma.shippingPolicyAcceptance.create({
+    data: {
+      orderId,
+      userId: customer.id,
+      version: "1.0",
+      ipHash: createHash("sha256").update(customer.id + orderId).digest("hex").slice(0, 16),
+    },
   });
 
-  // 6. Save the checkout URL to the payment record
-  await prisma.financePayment.update({
-    where: { id: payment.id },
-    data: { 
-      checkoutUrl: init.checkoutUrl,
-      providerReference: init.providerReference
-    }
-  });
-
-  // Return the URL to the frontend so it can redirect the user
-  return { success: true, checkoutUrl: init.checkoutUrl };
+  return { ok: true as const, paymentRef, orderId, grandTotalKobo: Number(grandTotal) };
 }

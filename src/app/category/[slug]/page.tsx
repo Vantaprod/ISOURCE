@@ -7,13 +7,14 @@ import { searchProducts } from "@/lib/catalog";
 import type { CategorySlug, SortKey } from "@/types/catalog";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { cn } from "@/lib/cn";
+import { SponsoredSlot } from "@/components/advertising/SponsoredSlot";
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "relevance", label: "Relevance" }, { key: "price-asc", label: "Price: low to high" },
   { key: "price-desc", label: "Price: high to low" }, { key: "newest", label: "Newest" }, { key: "popular", label: "Popular" },
 ];
 const PRICE_RANGES = [
-  { label: "₦0 – ₦50,000", min: 0, max: 50_000 },
+  { label: "₦0 – ₦10,000,000", min: 0, max: 50_000 },
   { label: "₦50,001 – ₦100,000", min: 50_001, max: 100_000 },
   { label: "₦100,001 – ₦200,000", min: 100_001, max: 200_000 },
   { label: "₦200,001 – ₦500,000", min: 200_001, max: 500_000 },
@@ -141,7 +142,14 @@ export default async function CategoryPage({ params, searchParams }: Props) {
             </form>
           </div>
 
-          <ProductGrid products={result.items} />
+              <SponsoredSlot
+        placementSlug="category-top"
+        categoryId={cat.slug}
+        keywords={q ? [q] : []}
+        limit={4}
+      />
+
+      <ProductGrid products={result.items} />
 
           {result.pageCount > 1 && (
             <nav className="mt-10 flex items-center justify-center gap-2">
