@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 
 export const metadata = { title: "Shipping & Delivery Policy — Isource" };
