@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 "use client";
 import { useState } from "react";
 import { PackageSearch, AlertTriangle } from "lucide-react";
