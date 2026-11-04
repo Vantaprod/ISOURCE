@@ -2,43 +2,67 @@
 
 import { useState } from "react";
 import { PackageSearch, AlertTriangle } from "lucide-react";
+import Link from "next/link";
 
 export default function TrackOrderPage() {
-  const [submitted, setSubmitted] = useState(false);
+  const [orderId, setOrderId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleTrack = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    
+    // Simulate an API call
+    setTimeout(() => {
+      setLoading(false);
+      if (orderId.length < 5) {
+        setError("Please enter a valid order number.");
+      }
+    }, 1000);
+  };
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 py-12 md:py-20">
-      <div className="max-w-md mx-auto">
-        <div className="text-center mb-8">
-          <div className="mx-auto h-16 w-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
-            <PackageSearch size={32} />
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Track Your Order</h1>
-          <p className="text-sm text-muted">Enter your order number and email to see the status.</p>
+    <div className="container mx-auto px-4 py-12 max-w-lg">
+      <div className="text-center mb-8">
+        <PackageSearch size={48} className="mx-auto text-primary mb-4" />
+        <h1 className="text-2xl font-extrabold text-charcoal">Track Your Order</h1>
+        <p className="text-sm text-muted mt-2">Enter your order number to see delivery status.</p>
+      </div>
+
+      <form onSubmit={handleTrack} className="space-y-4">
+        <div>
+          <label className="block text-sm font-bold text-charcoal mb-1">Order Number</label>
+          <input
+            type="text"
+            value={orderId}
+            onChange={(e) => setOrderId(e.target.value)}
+            placeholder="e.g. ORD-12345"
+            className="h-10 w-full rounded border border-border px-3 text-sm bg-white outline-none focus:border-primary"
+            required
+          />
         </div>
 
-        {submitted ? (
-          <div className="rounded-lg border border-warning/30 bg-warning/10 p-6 text-center">
-            <AlertTriangle size={32} className="text-warning mx-auto mb-3" />
-            <h2 className="font-bold text-charcoal mb-1">Order tracking requires a database</h2>
-            <p className="text-sm text-charcoal/80 mb-4">In this demo, orders are stored locally in your browser and cannot be queried from another device.</p>
-            <button onClick={() => setSubmitted(false)} className="text-primary font-medium hover:underline text-sm">Try again</button>
+        {error && (
+          <div className="rounded border border-danger/30 bg-danger/10 p-3 text-sm text-danger flex items-center gap-2">
+            <AlertTriangle size={16} /> {error}
           </div>
-        ) : (
-          <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="rounded-lg border border-border bg-white p-6 space-y-4">
-            <div>
-              <label className="block text-xs font-medium mb-1">Order Number</label>
-              <input required type="text" placeholder="e.g. IS-12345678" className="h-11 w-full rounded border border-border px-3 text-sm outline-none focus:border-primary" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Email or Phone</label>
-              <input required type="text" placeholder="The email or phone used at checkout" className="h-11 w-full rounded border border-border px-3 text-sm outline-none focus:border-primary" />
-            </div>
-            <button type="submit" className="w-full h-11 rounded bg-primary text-white text-sm font-semibold hover:bg-primary-hover">
-              Track Order
-            </button>
-          </form>
         )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-11 rounded bg-primary text-white font-bold text-sm hover:bg-primary-hover disabled:opacity-50"
+        >
+          {loading ? "Searching..." : "Track Order"}
+        </button>
+      </form>
+
+      <div className="mt-8 text-center">
+        <Link href="/account/orders" className="text-sm text-primary font-bold hover:underline">
+          View all your orders →
+        </Link>
       </div>
     </div>
   );
