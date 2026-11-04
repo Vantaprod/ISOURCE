@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { CookieConsent } from "@/components/layout/CookieConsent";
 import { FestivalTeaser } from "@/components/layout/FestivalTeaser";
 import { VisitTracker } from "@/components/analytics/VisitTracker";

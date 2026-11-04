@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { BackToDashboard } from "@/components/layout/BackToDashboard";
 import { AccountSidebar } from "@/components/layout/AccountSidebar";
 
