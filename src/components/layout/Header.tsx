@@ -23,6 +23,8 @@ export function Header({ user }: { user: SessionPayload | null }) {
   const { count: wishCount } = useWishlist();
   const router = useRouter();
   const pathname = usePathname();
+  const isDashboardRoute = pathname?.startsWith('/vendor') || pathname?.startsWith('/admin') || pathname?.startsWith('/brand');
+  const pathname = usePathname();
 
   const isAdmin = pathname?.startsWith("/admin");
   const hideStorefrontNav = isAdmin || pathname?.startsWith("/vendor") || pathname?.startsWith("/account") || pathname === "/cart" || pathname?.startsWith("/checkout");
