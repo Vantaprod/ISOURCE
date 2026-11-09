@@ -37,7 +37,8 @@ export async function createSession(payload: Omit<SessionPayload, "expiresAt">) 
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const session = await encrypt({ ...payload, expiresAt });
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, session, { httpOnly: true, secure: process.env.NODE_ENV === "production", expires: expiresAt, sameSite: "lax", path: "/" });
+  cookieStore.set(SESSION_COOKIE, session, { httpOnly: true,
+    domain: process.env.NODE_ENV === 'production' ? '.isourcemarket.com' : undefined, secure: process.env.NODE_ENV === "production", expires: expiresAt, sameSite: "lax", path: "/" });
 }
 
 export async function deleteSession() {

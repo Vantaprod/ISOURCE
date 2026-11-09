@@ -1,17 +1,28 @@
 export const dynamic = "force-dynamic";
 
+import { headers } from "next/headers";
 import { CookieConsent } from "@/components/layout/CookieConsent";
+import { headers } from "next/headers";
 import { FestivalTeaser } from "@/components/layout/FestivalTeaser";
+import { headers } from "next/headers";
 import { VisitTracker } from "@/components/analytics/VisitTracker";
 import type { Metadata } from "next";
 import "./globals.css";
+import { headers } from "next/headers";
 import { CartProvider } from "@/context/CartContext";
+import { headers } from "next/headers";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { headers } from "next/headers";
 import { ToastProvider } from "@/context/ToastContext";
+import { headers } from "next/headers";
 import { CampaignProvider } from "@/context/CampaignContext";
+import { headers } from "next/headers";
 import { Header } from "@/components/layout/Header";
+import { headers } from "next/headers";
 import { Footer } from "@/components/layout/Footer";
+import { headers } from "next/headers";
 import { getSession, type SessionPayload } from "@/lib/session";
+import { headers } from "next/headers";
 import { getActiveCampaign, darkenColor } from "@/lib/campaign";
 
 export const metadata: Metadata = {
@@ -21,6 +32,10 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const isDashboard = host.startsWith('admin.') || host.startsWith('logistics.') || host.startsWith('sellers.');
+
   let session: SessionPayload | null = null;
   try {
     session = await getSession();
@@ -60,7 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <ToastProvider>
                 <Header user={session} />
                 <main className="grow">{children}</main>
-                <Footer />
+                {!isDashboard && <Footer />}
               </ToastProvider>
             </WishlistProvider>
           </CartProvider>
