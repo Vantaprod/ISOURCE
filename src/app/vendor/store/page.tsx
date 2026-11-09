@@ -1,14 +1,8 @@
-import { getSession } from "@/lib/session";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Store, Image as ImageIcon, Layers, Palette } from "lucide-react";
 
-export const dynamic = "force-dynamic";
-
-export default async function VendorStorePage() {
-  const session = await getSession();
-  if (!session) redirect("/login");
-
+// Absolutely no database calls. No auth checks.
+export default function VendorStorePage() {
   return (
     <div className="max-w-5xl mx-auto py-8 space-y-6">
       <div className="flex items-center justify-between">
