@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { ProductForm } from "@/components/vendor/ProductForm"; // Adjust this path if your ProductForm is located elsewhere
+import { ProductForm } from "@/app/vendor/products/ProductForm"; // Adjust this path if your ProductForm is located elsewhere
 import { createProduct } from "@/app/actions/vendor"; // Adjust this if your action name is different
 
 export default async function NewProductPage() {
