@@ -1,122 +1,107 @@
-import { generateFinanceDeliveriesForOrder } from "@/app/actions/generate-deliveries";
-import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { processSuccessfulPayment } from "@/lib/payments/process-payment";
-import { postJournal } from "@/modules/ledger/ledger.service";
+import crypto from "node:crypto";
+import { generateFinanceDeliveriesForOrder } from "@/app/actions/generate-deliveries";
+import { sendEmail } from "@/lib/email";
+import { OrderConfirmation } from "@/emails/OrderConfirmation";
+import { VendorNewOrder } from "@/emails/VendorNewOrder";
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const rawBody = await req.text();
+    const body = await req.text();
+    const hash = crypto
+      .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY || "")
+      .update(body)
+      .digest("hex");
+
     const signature = req.headers.get("x-paystack-signature");
 
-    const hash = crypto.createHmac("sha512", process.env.PAYSTACK_SECRET_KEY!).update(rawBody).digest("hex");
-    if (hash !== signature) return NextResponse.json({ message: "Invalid signature" }, { status: 401 });
-
-    const event = JSON.parse(rawBody);
-    const eventId = event.data?.id?.toString() || event.data?.reference;
-    if (!eventId) return NextResponse.json({ message: "No event ID" }, { status: 400 });
-
-    // Idempotency: skip if already processed
-    const existing = await prisma.paymentWebhookEvent.findUnique({
-      where: { provider_eventId: { provider: "PAYSTACK", eventId } },
-    });
-    if (existing?.status === "PROCESSED") {
-      return NextResponse.json({ message: "Already processed" }, { status: 200 });
+    // 1. Verify the request actually came from Paystack
+    if (hash !== signature) {
+      console.warn("[Paystack Webhook] Invalid signature detected");
+      return NextResponse.json({ status: "unauthorized" }, { status: 401 });
     }
 
-    await prisma.paymentWebhookEvent.upsert({
-      where: { provider_eventId: { provider: "PAYSTACK", eventId } },
-      update: { status: "PROCESSING", attempts: { increment: 1 } },
-      create: {
-        provider: "PAYSTACK", eventId, eventType: event.event,
-        status: "PROCESSING", payload: event, signatureValid: true,
-      },
-    });
+    const event = JSON.parse(body);
 
-    // ═══════════ CHARGE SUCCESS (customer paid) ═══════════
+    // 2. Handle successful charge
     if (event.event === "charge.success") {
-      await processSuccessfulPayment(event.data.reference);
-    }
+      const reference = event.data.reference;
+      const amountKobo = BigInt(event.data.amount);
 
-    // ═══════════ TRANSFER SUCCESS (payout to vendor) ═══════
-    if (event.event === "transfer.success") {
-      const settlement = await prisma.vendorSettlement.findFirst({
-        where: { providerReference: event.data.reference },
+      // Find the payment record created during checkout
+      const payment = await prisma.financePayment.findUnique({
+        where: { reference },
       });
 
-      if (settlement && settlement.status !== "SUCCESSFUL") {
-        // 1. Mark settlement as successful
-        await prisma.vendorSettlement.update({
-          where: { id: settlement.id },
-          data: { status: "SUCCESSFUL", completedAt: new Date() },
+      // Idempotency: If payment doesn't exist or is already successful, ignore
+      if (!payment || payment.status === "SUCCESSFUL") {
+        return NextResponse.json({ status: "success" });
+      }
+
+      // 3. Update Payment Status
+      await prisma.financePayment.update({
+        where: { id: payment.id },
+        data: {
+          status: "SUCCESSFUL",
+          paidAt: new Date(),
+          rawResponse: event.data,
+        },
+      });
+
+      // 4. Update the FinanceVendorOrders to PAID
+      await prisma.financeVendorOrder.updateMany({
+        where: { orderId: payment.orderId },
+        data: { status: "PROCESSING" }, // or whatever status means "paid and ready to ship"
+      });
+
+      // 5. Generate Deliveries
+      await generateFinanceDeliveriesForOrder(payment.orderId);
+
+      // 6. Send Emails
+      try {
+        const customer = await prisma.user.findUnique({ where: { id: payment.customerId } });
+        const vendorOrders = await prisma.financeVendorOrder.findMany({
+          where: { orderId: payment.orderId },
+          include: { vendor: { include: { user: true } } },
         });
 
-    // Trigger delivery generation (Phase 8)
-    await generateFinanceDeliveriesForOrder(payment.orderId);
+        // Email Customer
+        if (customer?.email) {
+          await sendEmail({
+            to: customer.email,
+            subject: `Order Confirmed - ${payment.orderId}`,
+            react: OrderConfirmation({
+              customerName: customer.name || "Customer",
+              orderId: payment.orderId,
+              totalKobo: Number(amountKobo),
+            }),
+          });
+        }
 
-        // 2. Post final ledger journal: In Transit → Gateway Clearing
-        const accounts = await prisma.ledgerAccount.findMany({
-          where: { code: { in: ["2020", "1000"] } },
-        });
-        const inTransitAcc = accounts.find(a => a.code === "2020")!;
-        const clearingAcc = accounts.find(a => a.code === "1000")!;
-
-        await postJournal({
-          reference: `JRN-TRANSFER-OK-${settlement.reference}`,
-          idempotencyKey: `TRANSFER-OK-${settlement.id}`,
-          sourceType: "VENDOR_SETTLEMENT",
-          sourceId: settlement.id,
-          description: `Payout confirmed by Paystack: ${settlement.reference}`,
-          entries: [
-            { accountId: inTransitAcc.id, direction: "DEBIT", amountKobo: settlement.amountKobo },
-            { accountId: clearingAcc.id, direction: "CREDIT", amountKobo: settlement.amountKobo },
-          ],
-        });
+        // Email Vendors
+        for (const vo of vendorOrders) {
+          if (vo.vendor?.user?.email) {
+            await sendEmail({
+              to: vo.vendor.user.email,
+              subject: `New Order Received - ${vo.orderNumber}`,
+              react: VendorNewOrder({
+                vendorName: vo.vendor.name,
+                orderNumber: vo.orderNumber,
+                vendorNetKobo: Number(vo.vendorNetKobo),
+              }),
+            });
+          }
+        }
+      } catch (emailErr) {
+        console.error("Failed to send post-payment emails:", emailErr);
+        // We don't throw, so the webhook still returns 200 OK
       }
     }
 
-    // ═══════════ TRANSFER FAILED / REVERSED ═══════════
-    if (event.event === "transfer.failed" || event.event === "transfer.reversed") {
-      const settlement = await prisma.vendorSettlement.findFirst({
-        where: { providerReference: event.data.reference },
-      });
-
-      if (settlement && settlement.status !== "FAILED") {
-        await prisma.vendorSettlement.update({
-          where: { id: settlement.id },
-          data: { status: "FAILED", failureReason: event.data.reason || "Transfer failed" },
-        });
-
-        // Reverse ledger: In Transit → Available (restore vendor liability)
-        const accounts = await prisma.ledgerAccount.findMany({
-          where: { code: { in: ["2020", "2010"] } },
-        });
-        const inTransitAcc = accounts.find(a => a.code === "2020")!;
-        const availableAcc = accounts.find(a => a.code === "2010")!;
-
-        await postJournal({
-          reference: `JRN-TRANSFER-FAIL-${settlement.reference}`,
-          idempotencyKey: `TRANSFER-FAIL-${settlement.id}`,
-          sourceType: "VENDOR_SETTLEMENT",
-          sourceId: settlement.id,
-          description: `Payout failed, restoring vendor balance: ${settlement.reference}`,
-          entries: [
-            { accountId: inTransitAcc.id, direction: "DEBIT", amountKobo: settlement.amountKobo },
-            { accountId: availableAcc.id, direction: "CREDIT", amountKobo: settlement.amountKobo },
-          ],
-        });
-      }
-    }
-
-    await prisma.paymentWebhookEvent.update({
-      where: { provider_eventId: { provider: "PAYSTACK", eventId } },
-      data: { status: "PROCESSED", processedAt: new Date() },
-    });
-
-    return NextResponse.json({ status: "success" }, { status: 200 });
-  } catch (error: unknown) {
-    console.error("Webhook Error:", error);
-    return NextResponse.json({ message: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+    return NextResponse.json({ status: "success" });
+  } catch (error) {
+    console.error("[Paystack Webhook] Error:", error);
+    return NextResponse.json({ status: "error" }, { status: 500 });
   }
 }
