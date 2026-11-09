@@ -662,26 +662,40 @@ model RankingConfig {
 }
 
 model SponsoredCampaign {
-  id                   String              @id @default(cuid())
-  productId            String
-  budgetKobo           Int                 @default(0)
-  spendKobo            Int                 @default(0)
-  costPerClickKobo     Int                 @default(50)
-  startDate            DateTime
-  endDate              DateTime
-  isActive             Boolean             @default(true)
-  priority             Int                 @default(0)
-  impressions          Int                 @default(0)
-  clicks               Int                 @default(0)
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  product              Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sponsoredPlacement   SponsoredPlacement? @relation(fields: [sponsoredPlacementId], references: [id])
-  sponsoredPlacementId String?
-  sponsoredEvents      SponsoredEvent[]
+  id               String    @id @default(cuid())
+  productId        String
+  vendorId         String?
+  placementId      String?
+  campaignType     String    @default("SPONSORED_PRODUCT")
+  status           String    @default("ACTIVE")
+  budgetKobo       Int       @default(0)
+  dailyBudgetKobo  Int       @default(0)
+  spendKobo        Int       @default(0)
+  costPerClickKobo Int       @default(50)
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean   @default(true)
+  priority         Int       @default(0)
+  impressions      Int       @default(0)
+  clicks           Int       @default(0)
+  targeting        Json?
+  moderationNote   String?
+  termsAcceptedAt  DateTime?
+  termsVersion     String?
+  approvedById     String?
+  approvedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  product   Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  placement SponsoredPlacement? @relation(fields: [placementId], references: [id])
+  events    SponsoredEvent[]
 
   @@index([isActive, startDate, endDate])
   @@index([productId])
+  @@index([vendorId, status])
+  @@index([placementId])
+  @@index([campaignType, status])
 }
 
 // ============================================================
