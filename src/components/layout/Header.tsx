@@ -36,7 +36,7 @@ export function Header({ user }: { user: SessionPayload | null }) {
 
   return (
     <>
-      {!isAdmin && <AnnouncementBar />}
+      {!isAdmin && {!isDashboardRoute && <AnnouncementBar />}}
       <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm">
         <div className="mx-auto max-w-[1440px] px-4">
           <div className="flex items-center gap-4 md:gap-6 py-3">
