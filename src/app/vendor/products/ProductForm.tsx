@@ -1,4 +1,6 @@
 "use client";
+
+import { ImageUploader } from "@/components/ui/ImageUploader";
 import { type Category } from "@/types/catalog";
 
 interface Props {
@@ -62,9 +64,8 @@ export function ProductForm({ formAction, isPending, categories, initialData }: 
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Image URL</label>
-          <input name="imageUrl" defaultValue={initialData?.imageUrl || "/images/placeholder.svg"} className="h-10 w-full rounded border border-border px-3 text-sm outline-none focus:border-primary" />
-          <p className="text-xs text-muted mt-1">Leave blank to use placeholder. (File uploads coming in v2.0)</p>
+          <label className="block text-xs font-bold text-charcoal mb-2">Product Images (Max 12)</label>
+          <ImageUploader name="imageFiles" maxImages={12} />
         </div>
       </div>
 
