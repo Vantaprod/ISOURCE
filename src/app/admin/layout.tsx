@@ -1,10 +1,19 @@
 export const dynamic = "force-dynamic";
 
+import { prisma } from "@/lib/prisma";
+import { AdminUserNav } from "@/components/admin/AdminUserNav";
+import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { AdminUserNav } from "@/components/admin/AdminUserNav";
+import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import Link from "next/link";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const session = await getSession();
+  const adminUser = session ? await prisma.user.findUnique({ where: { id: session.userId } }) : null;
+
   const session = await getSession();
   
   // 🚨 SECURITY CHECK: Only ADMIN can access this route
