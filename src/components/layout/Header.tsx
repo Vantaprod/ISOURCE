@@ -22,6 +22,7 @@ export function Header({ user }: { user: SessionPayload | null }) {
   const { itemCount } = useCart();
   const { count: wishCount } = useWishlist();
   const router = useRouter();
+  const pathname = usePathname();
   
 
   
