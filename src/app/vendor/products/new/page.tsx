@@ -1,31 +1,29 @@
-"use client";
-export const dynamic = "force-dynamic";
+import { prisma } from "@/lib/prisma";
+import { ProductForm } from "@/components/vendor/ProductForm"; // Adjust this path if your ProductForm is located elsewhere
+import { createProduct } from "@/app/actions/vendor"; // Adjust this if your action name is different
 
-import { useActionState } from "react";
-import Link from "next/link";
-import { ChevronLeft, AlertTriangle } from "lucide-react";
-import { createProduct } from "@/app/actions/vendor";
-import { CATEGORIES } from "@/data/categories";
-import { ProductForm } from "../ProductForm";
-
-export default function NewProductPage() {
-  const [state, formAction, isPending] = useActionState(
-    createProduct, 
-    null
-  );
+export default async function NewProductPage() {
+  // 1. Fetch categories and brands from the database
+  const [categories, brands] = await Promise.all([
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.brand.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   return (
-    <div className="max-w-2xl">
-      <nav className="mb-4"><Link href="/vendor" className="text-xs text-muted hover:text-primary inline-flex items-center gap-1"><ChevronLeft size={14} /> Back to Inventory</Link></nav>
-      <h1 className="text-2xl font-bold mb-6">Add New Product</h1>
-      
-      {state?.error && (
-        <div className="rounded-md border border-danger/30 bg-danger/10 p-3 mb-6 text-sm text-danger flex items-center gap-2">
-          <AlertTriangle size={16} /> {state.error}
-        </div>
-      )}
+    <div className="max-w-4xl mx-auto py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-extrabold text-charcoal">Add New Product</h1>
+        <p className="text-sm text-muted mt-1">Fill in the details below to list a new item in your store.</p>
+      </div>
 
-      <ProductForm formAction={formAction} isPending={isPending} /* categories={categories} */ /* brands={brands} */ />
+      {/* 2. Pass the fetched data to your form */}
+      <div className="bg-white border border-border rounded-xl p-6">
+        <ProductForm 
+          action={createProduct} 
+          categories={categories} 
+          brands={brands} 
+        />
+      </div>
     </div>
   );
 }

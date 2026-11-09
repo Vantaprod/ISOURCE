@@ -17,7 +17,7 @@ export default function ReturnsPage() {
               <li>Item is damaged or defective upon arrival.</li>
               <li>Item is significantly different from the description.</li>
               <li>Wrong item was delivered.</li>
-              <li>Original packaging and tags are intact.</li>
+              <li>Original packaging and tags <strong>must be</strong> intact.</li>
             </ul>
           </div>
           <div className="p-6 rounded-lg border border-danger/30 bg-danger/5">
