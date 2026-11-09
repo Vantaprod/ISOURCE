@@ -22,9 +22,9 @@ export function Header({ user }: { user: SessionPayload | null }) {
   const { itemCount } = useCart();
   const { count: wishCount } = useWishlist();
   const router = useRouter();
-  const pathname = usePathname();
-  const isDashboardRoute = pathname?.startsWith('/vendor') || pathname?.startsWith('/admin') || pathname?.startsWith('/brand');
-  const pathname = usePathname();
+  
+
+  
 
   const isAdmin = pathname?.startsWith("/admin");
   const hideStorefrontNav = isAdmin || pathname?.startsWith("/vendor") || pathname?.startsWith("/account") || pathname === "/cart" || pathname?.startsWith("/checkout");
@@ -38,7 +38,7 @@ export function Header({ user }: { user: SessionPayload | null }) {
 
   return (
     <>
-      {!isAdmin && !isDashboardRoute && <AnnouncementBar />}
+      {!hideStorefrontNav && <AnnouncementBar />}
       <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm">
         <div className="mx-auto max-w-[1440px] px-4">
           <div className="flex items-center gap-4 md:gap-6 py-3">
@@ -124,7 +124,7 @@ export function Header({ user }: { user: SessionPayload | null }) {
                     <Link href="/login" className="flex items-center gap-1.5 px-2 py-1 text-sm font-medium hover:text-primary"><User size={20} /><span className="hidden lg:inline">Sign In</span></Link>
                   )}
                   <NotificationBell initialCount={0} />
-          {!isDashboardRoute && (<>
+          {!hideStorefrontNav && (<>
 <Link href="/wishlist" className="relative flex items-center gap-2 px-2 py-1 text-sm hover:text-primary"><Heart size={20} />{wishCount > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-charcoal text-white text-[10px] flex items-center justify-center font-bold px-1">{wishCount}</span>}</Link>
 <Link href="/cart" className="relative flex items-center gap-2 px-2 py-1 text-sm hover:text-primary"><ShoppingCart size={20} />{itemCount > 0 && <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-primary text-white text-[10px] flex items-center justify-center font-bold px-1">{itemCount}</span>}</Link>
 </>)}
