@@ -1,13 +1,9 @@
-export const dynamic = "force-dynamic";
-
-import { prisma } from "@/lib/prisma";
-import { AdminUserNav } from "@/components/admin/AdminUserNav";
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { AdminUserNav } from "@/components/admin/AdminUserNav";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { AdminUserNav } from "@/components/admin/AdminUserNav";
+export const dynamic = "force-dynamic";
+
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
