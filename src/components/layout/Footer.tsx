@@ -37,7 +37,7 @@ export function Footer() {
               <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
               <li><Link href="/track-order" className="hover:text-white transition-colors">Track Order</Link></li>
               <li><Link href="/returns" className="hover:text-white transition-colors">Returns & Refunds</Link></li>
-              <li><Link href="/shipping" className="hover:text-white transition-colors">Shipping Info</Link></li>
+              <li><Link href="/policies/shipping" className="hover:text-white transition-colors">Shipping Info</Link></li>
             </ul>
           </div>
 
