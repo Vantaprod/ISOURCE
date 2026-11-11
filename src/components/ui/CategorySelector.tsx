@@ -181,6 +181,28 @@ export function CategorySelector({
               )}
             </div>
 
+                  {/* Suggest Category UI */}
+      <div className="p-4 border-t border-border bg-surface/30 flex items-center justify-between">
+        <p className="text-xs text-muted">Can't find what you're looking for?</p>
+        <div className="flex gap-2">
+          <input 
+            type="text" 
+            placeholder="Suggest new category..." 
+            value={suggestName}
+            onChange={(e) => setSuggestName(e.target.value)}
+            className="h-9 px-3 rounded-lg border border-border text-sm outline-none focus:border-primary"
+          />
+          <button 
+            type="button"
+            onClick={handleSuggest}
+            disabled={isSuggesting || !suggestName}
+            className="h-9 px-4 rounded-lg bg-charcoal text-white text-xs font-bold hover:bg-black disabled:opacity-50 transition-colors"
+          >
+            {isSuggesting ? "Sending..." : "Suggest"}
+          </button>
+        </div>
+      </div>
+
             {/* Footer */}
             <div className="p-4 border-t border-border bg-surface/30 flex justify-end">
               <button
@@ -188,7 +210,7 @@ export function CategorySelector({
                 onClick={() => setIsOpen(false)}
                 className="h-10 px-6 rounded-lg border border-border bg-white text-sm font-bold text-charcoal hover:bg-surface transition-colors"
               >
-                Cancel
+                Close
               </button>
             </div>
 
