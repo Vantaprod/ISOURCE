@@ -231,7 +231,6 @@ model Product {
   warrantyReplacement  Boolean                  @default(false)
   storeCollectionItems StoreCollectionProduct[]
   isActive             Boolean                  @default(true)
-  status               String   @default("APPROVED")
   isFeatured           Boolean                  @default(false)
   approvalStatus       ProductApprovalStatus    @default(APPROVED)
   createdAt            DateTime                 @default(now())
@@ -456,7 +455,6 @@ model DeliveryZone {
   feeKobo       Int
   freeAboveKobo Int?
   isActive      Boolean  @default(true)
-  status               String   @default("APPROVED")
   createdAt     DateTime @default(now())
 
   @@index([state])
@@ -591,7 +589,6 @@ model HeroBanner {
   ctaUrl      String?
   position    Int       @default(0)
   isActive    Boolean   @default(true)
-  status               String   @default("APPROVED")
   startDate   DateTime?
   endDate     DateTime?
   createdAt   DateTime  @default(now())
@@ -609,7 +606,6 @@ model HomepageSection {
   type      HomepageSectionType
   position  Int                 @default(0)
   isVisible Boolean             @default(true)
-  status               String   @default("APPROVED")
   config    Json?
   startDate DateTime?
   endDate   DateTime?
@@ -630,7 +626,6 @@ model Collection {
   description String?
   imageUrl    String?
   isActive    Boolean   @default(true)
-  status               String   @default("APPROVED")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   products    Product[] @relation("ProductCollections")
@@ -648,7 +643,6 @@ model Campaign {
   startDate   DateTime
   endDate     DateTime
   isActive    Boolean     @default(true)
-  status               String   @default("APPROVED")
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   banner      HeroBanner? @relation(fields: [bannerId], references: [id])
@@ -686,7 +680,6 @@ model SponsoredCampaign {
   startDate        DateTime
   endDate          DateTime
   isActive         Boolean   @default(true)
-  status               String   @default("APPROVED")
   priority         Int       @default(0)
   impressions      Int       @default(0)
   clicks           Int       @default(0)
@@ -723,7 +716,6 @@ model PromoBanner {
   theme     String   @default("orange") // "orange", "cream", "charcoal"
   position  Int      @default(0)
   isActive  Boolean  @default(true)
-  status               String   @default("APPROVED")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -741,7 +733,6 @@ model Bundle {
   originalPriceKobo Int?
   imageUrl          String?
   isActive          Boolean  @default(true)
-  status               String   @default("APPROVED")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -1261,7 +1252,6 @@ model StoreBanner {
   ctaUrl          String?
   sortOrder       Int              @default(0)
   isActive        Boolean          @default(true)
-  status               String   @default("APPROVED")
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   startsAt        DateTime?
@@ -1279,7 +1269,6 @@ model StoreCollection {
   description     String?
   imageUrl        String?
   isActive        Boolean                  @default(true)
-  status               String   @default("APPROVED")
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
   products        StoreCollectionProduct[]
@@ -1331,7 +1320,6 @@ model StoreSection {
   type      StoreSectionType
   sortOrder Int              @default(0)
   isActive  Boolean          @default(true)
-  status               String   @default("APPROVED")
   config    Json?
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
@@ -1392,7 +1380,6 @@ model SponsoredPlacement {
   fixedRateKobo    Int                 @default(0)
   maxSlots         Int                 @default(4)
   isActive         Boolean             @default(true)
-  status               String   @default("APPROVED")
   requiresApproval Boolean             @default(true)
   eligibilityJson  Json?
   createdAt        DateTime            @default(now())
@@ -1507,7 +1494,6 @@ model ShippingZone {
   states    String[]
   cities    String[]
   isActive  Boolean         @default(true)
-  status               String   @default("APPROVED")
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
   rates     ShippingRate[]
@@ -1522,7 +1508,6 @@ model ShippingProvider {
   code           String         @unique
   isInternal     Boolean        @default(false)
   isActive       Boolean        @default(true)
-  status               String   @default("APPROVED")
   supportsPickup Boolean        @default(true)
   supportsHome   Boolean        @default(true)
   apiConfig      Json?
@@ -1557,7 +1542,6 @@ model PickupStation {
   latitude  Float?
   longitude Float?
   isActive  Boolean      @default(true)
-  status               String   @default("APPROVED")
   createdAt DateTime     @default(now())
   zone      ShippingZone @relation(fields: [zoneId], references: [id])
 

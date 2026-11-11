@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, X, Check, Search, FolderTree } from "lucide-react";
+import { ChevronRight, X, Check, Search, FolderTree, PlusCircle } from "lucide-react";
+import { suggestCategory } from "@/app/actions/category";
 
 export type CategoryNode = {
   id: string;
@@ -23,10 +24,13 @@ export function CategorySelector({
   const [selected, setSelected] = useState<string>(defaultValue);
   const [selectedName, setSelectedName] = useState<string>("Select category");
   
-  // Navigation state
   const [activeParent, setActiveParent] = useState<CategoryNode | null>(null);
   const [activePath, setActivePath] = useState<CategoryNode[]>([]);
   const [search, setSearch] = useState("");
+
+  // Suggest Category State
+  const [suggestName, setSuggestName] = useState("");
+  const [isSuggesting, setIsSuggesting] = useState(false);
 
   const handleSelect = (cat: CategoryNode) => {
     if (cat.children && cat.children.length > 0) {
@@ -42,9 +46,23 @@ export function CategorySelector({
     }
   };
 
-  // Get the current list to display
+  const handleSuggest = async () => {
+    if (!suggestName.trim()) return;
+    setIsSuggesting(true);
+    const parentId = activePath.length > 0 ? activePath[activePath.length - 1].id : null;
+    
+    const res = await suggestCategory(suggestName, parentId);
+    setIsSuggesting(false);
+    
+    if ("error" in res) {
+      alert(res.error);
+    } else {
+      alert("Category suggestion submitted! It will appear here once approved by an admin.");
+      setSuggestName("");
+    }
+  };
+
   const currentList = activeParent ? (activeParent.children || []) : categories;
-  
   const filteredList = search
     ? currentList.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
     : currentList;
@@ -64,7 +82,6 @@ export function CategorySelector({
         <ChevronRight size={16} className="text-muted" />
       </button>
 
-      {/* Modal Overlay */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-charcoal/60 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
@@ -82,11 +99,7 @@ export function CategorySelector({
                   <p className="text-xs text-muted">Choose the most relevant category for your product</p>
                 </div>
               </div>
-              <button 
-                type="button" 
-                onClick={() => setIsOpen(false)} 
-                className="p-2 text-muted hover:text-charcoal rounded-full hover:bg-surface transition-colors"
-              >
+              <button onClick={() => setIsOpen(false)} className="p-2 text-muted hover:text-charcoal rounded-full hover:bg-surface transition-colors">
                 <X size={24} />
               </button>
             </div>
@@ -105,7 +118,6 @@ export function CategorySelector({
               </div>
               {activePath.length > 0 && (
                 <button 
-                  type="button"
                   onClick={() => {
                     const newPath = [...activePath];
                     newPath.pop();
@@ -181,34 +193,32 @@ export function CategorySelector({
               )}
             </div>
 
-                  {/* Suggest Category UI */}
-      <div className="p-4 border-t border-border bg-surface/30 flex items-center justify-between">
-        <p className="text-xs text-muted">Can't find what you're looking for?</p>
-        <div className="flex gap-2">
-          <input 
-            type="text" 
-            placeholder="Suggest new category..." 
-            value={suggestName}
-            onChange={(e) => setSuggestName(e.target.value)}
-            className="h-9 px-3 rounded-lg border border-border text-sm outline-none focus:border-primary"
-          />
-          <button 
-            type="button"
-            onClick={handleSuggest}
-            disabled={isSuggesting || !suggestName}
-            className="h-9 px-4 rounded-lg bg-charcoal text-white text-xs font-bold hover:bg-black disabled:opacity-50 transition-colors"
-          >
-            {isSuggesting ? "Sending..." : "Suggest"}
-          </button>
-        </div>
-      </div>
+            {/* Footer with Suggest */}
+            <div className="p-4 border-t border-border bg-surface/30 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex-1 flex items-center gap-2 w-full">
+                <PlusCircle size={18} className="text-muted shrink-0" />
+                <p className="text-xs text-muted hidden md:block">Can't find a category?</p>
+                <input 
+                  type="text" 
+                  placeholder="Suggest new category..." 
+                  value={suggestName}
+                  onChange={(e) => setSuggestName(e.target.value)}
+                  className="h-9 px-3 rounded-lg border border-border text-sm outline-none focus:border-primary flex-1 max-w-xs"
+                />
+                <button 
+                  type="button"
+                  onClick={handleSuggest}
+                  disabled={isSuggesting || !suggestName}
+                  className="h-9 px-4 rounded-lg bg-charcoal text-white text-xs font-bold hover:bg-black disabled:opacity-50 transition-colors shrink-0"
+                >
+                  {isSuggesting ? "Sending..." : "Suggest"}
+                </button>
+              </div>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-border bg-surface/30 flex justify-end">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="h-10 px-6 rounded-lg border border-border bg-white text-sm font-bold text-charcoal hover:bg-surface transition-colors"
+                className="h-10 px-6 rounded-lg border border-border bg-white text-sm font-bold text-charcoal hover:bg-surface transition-colors shrink-0 w-full md:w-auto"
               >
                 Close
               </button>
