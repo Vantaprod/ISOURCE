@@ -5,7 +5,7 @@ import { createProduct } from "@/app/actions/vendor"; // Adjust this if your act
 export default async function NewProductPage() {
   // 1. Fetch categories and brands from the database
   const [categories, brands] = await Promise.all([
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.category.findMany({ where: { parentId: null }, include: { children: { include: { children: true } } }, orderBy: { name: "asc" } }),
     prisma.brand.findMany({ orderBy: { name: "asc" } }),
   ]);
 
