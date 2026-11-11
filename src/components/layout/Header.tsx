@@ -114,7 +114,7 @@ export function Header({ user }: { user: SessionPayload | null }) {
                           <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
                           <div className="absolute right-0 top-full mt-1 w-56 rounded-lg border border-border bg-white shadow-lg py-2 z-50">
                             <Link href="/account" className="block px-4 py-2 text-sm text-charcoal hover:bg-surface">My Account</Link>
-                            {user.role === "ADMIN" && <Link href="/admin" className="block px-4 py-2 text-sm text-charcoal hover:bg-surface"><ShieldAlert size={14} className="inline mr-1" /> Admin Panel</Link>}
+                            {user.role === "ADMIN" && <Link href="https://admin.isourcemarket.com" className="block px-4 py-2 text-sm text-charcoal hover:bg-surface"><ShieldAlert size={14} className="inline mr-1" /> Admin Panel</Link>}
                             {user.role === "VENDOR" && <Link href="/vendor" className="block px-4 py-2 text-sm text-charcoal hover:bg-surface"><Store size={14} className="inline mr-1" /> Vendor Portal</Link>}
                             <button onClick={() => startTransition(async () => { await logoutAction(); })} className="w-full text-left px-4 py-2 text-sm text-danger hover:bg-danger/5 flex items-center gap-2"><LogOut size={14} /> Log out</button>
                           </div>

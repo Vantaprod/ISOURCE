@@ -60,7 +60,7 @@ export function Footer() {
           
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs">
             <Link href="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link> <Link href="/login" className="hover:text-white transition-colors font-bold text-primary ml-4">Staff Login</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link> <Link href="https://admin.isourcemarket.com" className="hover:text-white transition-colors font-bold text-primary ml-4">Staff Login</Link>
             <Link href="/cookies" className="hover:text-white transition-colors">Cookie Notice</Link>
           </div>
           

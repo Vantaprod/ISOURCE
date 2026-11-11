@@ -34,7 +34,7 @@ export function AdminUserNav({ name, email, role }: { name: string; email: strin
               <p className="text-xs text-muted truncate">{email}</p>
             </div>
             
-            <Link href="/admin" className="block px-4 py-2 text-sm text-charcoal hover:bg-surface hover:text-primary">
+            <Link href="https://admin.isourcemarket.com" className="block px-4 py-2 text-sm text-charcoal hover:bg-surface hover:text-primary">
               Admin Dashboard
             </Link>
             
