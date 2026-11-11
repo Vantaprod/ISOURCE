@@ -1,6 +1,6 @@
 "use client";
 
-import { CustomSelect } from "@/components/ui/CustomSelect";
+import { CategorySelector } from "@/components/ui/CategorySelector";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { type Category } from "@/types/catalog";
 
@@ -40,12 +40,10 @@ export function ProductForm({ formAction, isPending, categories, initialData }: 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Category *</label>
-            <CustomSelect
+            <CategorySelector
               name="categorySlug"
-              options={categories.map((c: any) => ({ value: c.slug, label: c.name }))}
+              categories={categories}
               defaultValue={initialData?.categorySlug || ""}
-              placeholder="Select category"
-              required
             />
           </div>
           <div>
