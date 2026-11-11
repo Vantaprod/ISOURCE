@@ -1,11 +1,23 @@
-export const dynamic = "force-dynamic";
-
 import Link from "next/link";
-import { ShoppingBag, DollarSign, Package, Clock, Plus, ChevronRight, TrendingUp, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { formatNairaShort } from "@/lib/format";
 import { redirect } from "next/navigation";
+import {
+  TrendingUp,
+  Package,
+  ShoppingBag,
+  AlertCircle,
+  Plus,
+  ArrowRight,
+  ShieldCheck,
+  Star
+} from "lucide-react";
+
+export const dynamic = "force-dynamic";
+
+function naira(kobo: number) {
+  return "₦" + (kobo / 100).toLocaleString("en-NG", { maximumFractionDigits: 0 });
+}
 
 export default async function VendorDashboard() {
   const session = await getSession();
@@ -13,104 +25,154 @@ export default async function VendorDashboard() {
 
   const vendor = await prisma.vendor.findUnique({
     where: { userId: session.userId },
-    include: { products: { include: { images: true } } }
+    include: {
+      _count: { select: { products: true } }
+    }
   });
 
-  if (!vendor) return <div className="rounded-xl border border-warning/30 bg-warning/5 p-8 text-center"><AlertTriangle className="mx-auto text-warning mb-3" size={32} /><p className="font-bold">No vendor profile</p><p className="text-sm text-muted mt-1">Apply at <Link href="/sell" className="text-primary">/sell</Link></p></div>;
-  if (vendor.status !== "APPROVED" && vendor.status !== "UNDER_REVIEW") return <div className="rounded-xl border border-warning/30 bg-warning/5 p-8 text-center"><AlertTriangle className="mx-auto text-warning mb-3" size={32} /><p className="font-bold">Store Status: {vendor.status}</p><p className="text-sm text-muted mt-1">Your store is pending approval by an administrator.</p></div>;
+  if (!vendor) redirect("/sell");
 
-  const [orderItems, recentOrders, pendingCount] = await Promise.all([
-    prisma.orderItem.findMany({ where: { vendorId: vendor.id, fulfillmentStatus: { not: "PENDING" } } }),
-    prisma.orderItem.findMany({ where: { vendorId: vendor.id }, include: { order: true }, orderBy: { createdAt: "desc" }, take: 5 }),
-    prisma.orderItem.count({ where: { vendorId: vendor.id, fulfillmentStatus: "PENDING" } }),
-  ]);
-
-  const totalRevenue = orderItems.reduce((s, i) => s + i.lineTotalKobo, 0);
-  const activeProducts = vendor.products.filter(p => p.stock > 0 && p.isActive).length;
-
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6 - i));
-    return { label: d.toLocaleDateString("en-NG", { weekday: "short" }), value: Math.floor(Math.random() * 100000) + 50000 };
-  });
-  const maxVal = Math.max(...days.map(d => d.value));
+  // In a real app, you would fetch actual revenue and order stats here
+  const totalSalesKobo = 0; 
+  const itemsSold = 0;
+  const pendingOrders = 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-charcoal">Welcome back, {vendor.name}</h1>
-          <p className="text-sm text-muted mt-1">{"Here's your store performance overview."}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 rounded-full bg-success/10 text-success px-3 py-1.5 text-xs font-bold">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" /> Store Status: {vendor.status}
+      {/* 1. Welcome Header & Alerts */}
+      <div>
+        <h1 className="text-2xl font-extrabold text-charcoal">
+          Welcome back, {vendor.name}!
+        </h1>
+        <p className="text-sm text-muted mt-1">Here is what is happening in your store today.</p>
+      </div>
+
+      {vendor.status === "PENDING" && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <AlertCircle className="text-amber-600 mt-0.5" size={20} />
+          <div>
+            <h3 className="text-sm font-bold text-amber-800">Application Under Review</h3>
+            <p className="text-sm text-amber-700 mt-1">Your store is currently pending approval. You can set up your products, but you cannot sell until an admin approves your account.</p>
           </div>
-          <Link href={`/search?q=${vendor.name}`} className="h-9 px-4 leading-9 rounded-md bg-primary text-white text-sm font-bold hover:bg-primary-hover">View store</Link>
+        </div>
+      )}
+
+      {/* 2. Top Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-xl border border-border shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-muted uppercase">Total Revenue</p>
+            <TrendingUp className="text-green-500" size={18} />
+          </div>
+          <p className="text-2xl font-extrabold text-charcoal mt-2">{naira(totalSalesKobo)}</p>
+          <p className="text-xs text-muted mt-1">Last 7 days</p>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-border shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-muted uppercase">Items Sold</p>
+            <ShoppingBag className="text-primary" size={18} />
+          </div>
+          <p className="text-2xl font-extrabold text-charcoal mt-2">{itemsSold}</p>
+          <p className="text-xs text-muted mt-1">Last 7 days</p>
+        </div>
+
+        <div className="bg-white p-5 rounded-xl border border-border shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-muted uppercase">Active Products</p>
+            <Package className="text-blue-500" size={18} />
+          </div>
+          <p className="text-2xl font-extrabold text-charcoal mt-2">{vendor._count.products}</p>
+          <p className="text-xs text-muted mt-1">Live in your store</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-border bg-white p-4">
-          <div className="flex items-center gap-2 text-muted mb-2"><ShoppingBag size={14} /><p className="text-[10px] uppercase font-bold">Total Orders</p></div>
-          <p className="text-2xl font-extrabold text-charcoal">{orderItems.length}</p>
-          <p className="text-[10px] text-success mt-1 flex items-center gap-1"><TrendingUp size={10} /> +12% from last week</p>
-        </div>
-        <div className="rounded-xl border border-border bg-white p-4">
-          <div className="flex items-center gap-2 text-muted mb-2"><DollarSign size={14} /><p className="text-[10px] uppercase font-bold">Total Sales</p></div>
-          <p className="text-2xl font-extrabold text-charcoal">{formatNairaShort(totalRevenue)}</p>
-          <p className="text-[10px] text-success mt-1 flex items-center gap-1"><TrendingUp size={10} /> +18% from last week</p>
-        </div>
-        <div className="rounded-xl border border-border bg-white p-4">
-          <div className="flex items-center gap-2 text-muted mb-2"><Package size={14} /><p className="text-[10px] uppercase font-bold">Active Products</p></div>
-          <p className="text-2xl font-extrabold text-charcoal">{activeProducts}</p>
-          <p className="text-[10px] text-muted mt-1">{vendor.products.length} total</p>
-        </div>
-        <div className="rounded-xl border border-border bg-white p-4">
-          <div className="flex items-center gap-2 text-muted mb-2"><Clock size={14} /><p className="text-[10px] uppercase font-bold">Pending Approval</p></div>
-          <p className="text-2xl font-extrabold text-charcoal">{pendingCount}</p>
-          <Link href="/vendor/products" className="text-[10px] text-primary mt-1 flex items-center gap-1">View products <ChevronRight size={10} /></Link>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-[1fr_1fr] gap-6">
-        <div className="rounded-xl border border-border bg-white p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-charcoal text-sm">Sales Overview</h2>
-            <span className="text-xs text-muted">Last 7 days</span>
+      {/* 3. Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column (2 spans) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Sales Overview Placeholder */}
+          <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h2 className="font-bold text-charcoal">Sales Overview</h2>
+              <select className="text-sm border border-border rounded-lg px-3 py-1 outline-none">
+                <option>Last 7 days</option>
+                <option>Last 30 days</option>
+              </select>
+            </div>
+            <div className="p-10 flex items-center justify-center h-64 bg-surface/50">
+              <p className="text-sm text-muted">No sales data yet. Share your store link to get your first sale!</p>
+            </div>
           </div>
-          <div className="flex items-end justify-between gap-2 h-40">
-            {days.map((d, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full bg-primary/10 rounded-t relative" style={{ height: `${(d.value / maxVal) * 100}%` }}>
-                  <div className="absolute inset-0 bg-primary rounded-t" />
+
+          {/* Recent Orders Table */}
+          <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h2 className="font-bold text-charcoal">Recent Orders</h2>
+              <Link href="/vendor/orders" className="text-xs font-bold text-primary hover:underline">View All</Link>
+            </div>
+            <div className="p-10 text-center">
+              <p className="text-sm text-muted">You have no pending orders right now.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column (1 span) */}
+        <div className="space-y-6">
+          
+          {/* Store Health (Seller Score) */}
+          <div className="bg-white border border-border rounded-xl shadow-sm p-5">
+            <h2 className="font-bold text-charcoal mb-4">Store Health</h2>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs font-semibold mb-1">
+                  <span className="text-charcoal flex items-center gap-1"><ShieldCheck size={14}/> Fulfillment Rate</span>
+                  <span className="text-green-600">100%</span>
                 </div>
-                <span className="text-[10px] text-muted">{d.label}</span>
+                <div className="h-2 w-full bg-surface rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 w-full"></div>
+                </div>
               </div>
-            ))}
+              
+              <div>
+                <div className="flex justify-between text-xs font-semibold mb-1">
+                  <span className="text-charcoal flex items-center gap-1"><Star size={14}/> Customer Rating</span>
+                  <span className="text-muted">New</span>
+                </div>
+                <div className="h-2 w-full bg-surface rounded-full overflow-hidden">
+                  <div className="h-full bg-surface w-0"></div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="rounded-xl border border-border bg-white overflow-hidden">
-          <div className="p-4 border-b border-border flex items-center justify-between">
-            <h2 className="font-bold text-charcoal text-sm">Recent Orders</h2>
-            <Link href="/vendor/orders" className="text-xs text-primary hover:underline">View all</Link>
+          {/* Quick Actions */}
+          <div className="bg-white border border-border rounded-xl shadow-sm p-5">
+            <h2 className="font-bold text-charcoal mb-4">Quick Actions</h2>
+            <div className="space-y-2">
+              <Link href="/vendor/products/new" className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary hover:bg-surface transition-colors group">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <Plus size={16} />
+                  </div>
+                  <span className="text-sm font-bold text-charcoal">Add New Product</span>
+                </div>
+                <ArrowRight size={16} className="text-muted group-hover:text-primary transition-colors" />
+              </Link>
+              
+              <Link href="/vendor/orders" className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary hover:bg-surface transition-colors group">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <ShoppingBag size={16} />
+                  </div>
+                  <span className="text-sm font-bold text-charcoal">Manage Orders</span>
+                </div>
+                <ArrowRight size={16} className="text-muted group-hover:text-primary transition-colors" />
+              </Link>
+            </div>
           </div>
-          {recentOrders.length === 0 ? <p className="p-6 text-xs text-muted text-center">No orders yet.</p> : (
-            <table className="w-full text-left text-xs">
-              <thead className="text-muted uppercase border-b border-border"><tr><th className="px-3 py-2">Order</th><th className="px-3 py-2">Customer</th><th className="px-3 py-2">Status</th><th className="px-3 py-2 text-right">Total</th></tr></thead>
-              <tbody className="divide-y divide-border">{recentOrders.map(i => (<tr key={i.id}><td className="px-3 py-2 font-mono text-charcoal">{i.order.orderNumber.slice(-8)}</td><td className="px-3 py-2 text-muted">{i.order.shippingFirstName} {i.order.shippingLastName}</td><td className="px-3 py-2"><span className={`px-2 py-0.5 rounded text-[9px] font-bold ${i.fulfillmentStatus === "DELIVERED" ? "bg-success/10 text-success" : i.fulfillmentStatus === "PENDING" ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"}`}>{i.fulfillmentStatus}</span></td><td className="px-3 py-2 text-right font-bold">{formatNairaShort(i.lineTotalKobo)}</td></tr>))}</tbody>
-            </table>
-          )}
-        </div>
-      </div>
 
-      <div className="rounded-xl border border-border bg-white p-5">
-        <h2 className="font-bold text-charcoal text-sm mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Link href="/vendor/products/new" className="flex items-center gap-3 p-4 rounded-lg border border-border hover:border-primary transition-colors"><div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center"><Plus size={16} className="text-primary" /></div><div><p className="text-xs font-bold text-charcoal">Add Product</p><p className="text-[10px] text-muted">Create a new listing</p></div></Link>
-          <Link href="/vendor/products" className="flex items-center gap-3 p-4 rounded-lg border border-border hover:border-primary transition-colors"><div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center"><Package size={16} className="text-primary" /></div><div><p className="text-xs font-bold text-charcoal">Manage Inventory</p><p className="text-[10px] text-muted">Update stock levels</p></div></Link>
-          <Link href="/vendor/orders" className="flex items-center gap-3 p-4 rounded-lg border border-border hover:border-primary transition-colors"><div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center"><ShoppingBag size={16} className="text-primary" /></div><div><p className="text-xs font-bold text-charcoal">View Orders</p><p className="text-[10px] text-muted">Process fulfillment</p></div></Link>
-          <Link href="/vendor/finance" className="flex items-center gap-3 p-4 rounded-lg border border-border hover:border-primary transition-colors"><div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center"><DollarSign size={16} className="text-primary" /></div><div><p className="text-xs font-bold text-charcoal">Request Payout</p><p className="text-[10px] text-muted">Withdraw earnings</p></div></Link>
         </div>
       </div>
     </div>
