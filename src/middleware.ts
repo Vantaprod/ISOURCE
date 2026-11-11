@@ -5,8 +5,13 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const url = request.nextUrl.clone();
 
-  // Ignore static files and API routes
-  if (url.pathname.startsWith('/_next') || url.pathname.startsWith('/api') || url.pathname.includes('.')) {
+  // Ignore static files, API routes, and Vercel preview URLs
+  if (
+    url.pathname.startsWith('/_next') || 
+    url.pathname.startsWith('/api') || 
+    url.pathname.includes('.') ||
+    host.includes('vercel.app') // <--- This prevents the 404 on Vercel preview links
+  ) {
     return NextResponse.next();
   }
 
@@ -16,7 +21,6 @@ export function middleware(request: NextRequest) {
       url.pathname = '/vendor';
       return NextResponse.rewrite(url);
     }
-    // If they somehow navigate to /vendor on the subdomain, clean the URL
     if (url.pathname.startsWith('/vendor')) {
       url.pathname = url.pathname.replace('/vendor', '') || '/';
       return NextResponse.redirect(url);
