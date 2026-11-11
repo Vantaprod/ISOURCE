@@ -1,33 +1,31 @@
 import { Resend } from "resend";
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+if (!process.env.RESEND_API_KEY) {
+  console.warn("⚠️ RESEND_API_KEY is not set. Emails will not be sent.");
+}
 
-export async function sendOrderConfirmation(email: string, orderNumber: string, totalKobo: number) {
-  const formattedTotal = new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(totalKobo / 100);
+export const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy_key");
 
-  if (!resend) {
-    console.log(`\n📧 [EMAIL MOCK] Order Confirmation\nTo: ${email}\nOrder: ${orderNumber}\nTotal: ${formattedTotal}\n(Add RESEND_API_KEY to .env to send real emails)\n`);
-    return;
-  }
-
+export async function sendEmail({
+  to,
+  subject,
+  react,
+}: {
+  to: string;
+  subject: string;
+  react: React.ReactElement;
+}) {
   try {
-    await resend.emails.send({
-      from: "Isource <orders@isource.ng>", // Replace with your verified domain later
-      to: email,
-      subject: `Order Confirmation — ${orderNumber}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #F07824;">Thank you for your order!</h1>
-          <p>We've received your order <strong>#${orderNumber}</strong> and are getting it ready for dispatch.</p>
-          <p style="font-size: 20px; font-weight: bold;">Total: ${formattedTotal}</p>
-          <p>You can track the status of your order by logging into your account.</p>
-          <br/>
-          <p>Best regards,<br/>The Isource Team</p>
-        </div>
-      `,
+    const data = await resend.emails.send({
+      from: process.env.EMAIL_FROM || "Isource <onboarding@resend.dev>",
+      to,
+      subject,
+      react,
     });
-    console.log(`✅ Order confirmation email sent to ${email}`);
+    console.log(`[Email Sent] ${subject} to ${to}`, data);
+    return { success: true, data };
   } catch (error) {
-    console.error("Failed to send email:", error);
+    console.error(`[Email Failed] ${subject} to ${to}`, error);
+    return { success: false, error };
   }
 }
