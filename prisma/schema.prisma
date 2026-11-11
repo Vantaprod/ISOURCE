@@ -216,6 +216,7 @@ model Product {
   vendorId             String
   brandId              String?
   sku                  String                   @unique
+  publicSku            String                   @unique
   priceKobo            Int
   originalPriceKobo    Int?
   stock                Int                      @default(0)
@@ -274,6 +275,7 @@ model ProductVariant {
   productId  String
   label      String
   sku        String      @unique
+  publicSku  String      @unique
   stock      Int         @default(0)
   priceKobo  Int
   createdAt  DateTime    @default(now())
