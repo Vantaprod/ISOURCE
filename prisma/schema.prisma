@@ -194,15 +194,18 @@ model Vendor {
 }
 
 model Category {
-  id          String    @id @default(cuid())
-  slug        String    @unique
+  parentId    String?
+  parent      Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryToCategory")
+  id          String     @id @default(cuid())
+  slug        String     @unique
   name        String
   shortName   String
   description String?
   icon        String?
-  sortOrder   Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  sortOrder   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   products    Product[]
 }
 
