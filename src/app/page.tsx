@@ -1,40 +1,56 @@
-import { prisma } from "@/lib/prisma";
+import { FeaturedProducts, SponsoredBanner } from "@/components/advertising/FeaturedAndBanner";
+import Link from "next/link";
+import { Hero } from "@/components/home/Hero";
+import { CategoryStrip } from "@/components/home/CategoryStrip";
+import { InfiniteProductFeed } from "@/components/home/InfiniteProductFeed";
+import { FlashDealsSection } from "@/components/home/FlashDealsSection";
+import { FeaturedBrands } from "@/components/home/FeaturedBrands";
+import { OccasionOffersSection } from "@/components/home/OccasionOffersSection";
+import { TrustBar } from "@/components/home/TrustBar";
+import { Newsletter } from "@/components/home/Newsletter";
+import { PromoBanners } from "@/components/home/PromoBanners";
+import { ProductCard } from "@/components/product/ProductCard";
+import { getProductsByTag } from "@/lib/catalog";
+import type { ProductWithVendor } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
-export default async function DiagnosticPage() {
-  let dbStatus = "Unknown";
-  let errorDetails = "";
+export default async function HomePage() {
+  let flashDeals: ProductWithVendor[] = [];
+  let bestSellers: ProductWithVendor[] = [];
 
   try {
-    // Try to query the database
-    const count = await prisma.product.count();
-    dbStatus = `SUCCESS! Connected to DB. Total products: ${count}`;
-  } catch (error: any) {
-    dbStatus = "FAILED to connect to DB";
-    errorDetails = error.message;
+    flashDeals = await getProductsByTag("flash-deal");
+    bestSellers = await getProductsByTag("best-seller");
+  } catch (error) {
+    console.error("Failed to load products:", error);
   }
 
   return (
-    <div className="p-10 font-sans max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Isource Diagnostic Mode</h1>
-      
-      <div className="p-4 bg-surface border border-border rounded mb-4">
-        <h2 className="font-bold text-lg mb-2">Database Test</h2>
-        <p className={`font-mono ${dbStatus.includes("SUCCESS") ? "text-green-600" : "text-red-600"}`}>
-          {dbStatus}
-        </p>
-        {errorDetails && (
-          <pre className="mt-2 p-2 bg-red-100 text-red-800 text-xs overflow-auto">
-            {errorDetails}
-          </pre>
-        )}
+    <div className="mx-auto max-w-[1440px] px-4">
+      <Hero />
+      <CategoryStrip />
+      <SponsoredBanner />
+      <OccasionOffersSection />
+      <InfiniteProductFeed />
+      <div className="hidden md:block">
+        <FeaturedProducts />
+        <FlashDealsSection />
+        <FeaturedBrands />
+        <PromoBanners />
+        <section className="px-4 py-6">
+          <div className="flex items-end justify-between mb-4">
+            <h2 className="text-xl font-bold text-charcoal">Best Sellers</h2>
+            <Link href="/search" className="text-sm font-semibold text-primary hover:underline">View All →</Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {bestSellers.slice(0, 5).map(p => <ProductCard key={p.id} product={p as any} />)}
+          </div>
+        </section>
       </div>
-
-      <div className="p-4 bg-surface border border-border rounded">
-        <h2 className="font-bold text-lg mb-2">Environment Check</h2>
-        <p>Node Env: <code>{process.env.NODE_ENV}</code></p>
-        <p>DATABASE_URL set: <code>{process.env.DATABASE_URL ? "YES" : "NO"}</code></p>
+      <div className="px-4">
+        <TrustBar />
+        <Newsletter />
       </div>
     </div>
   );
