@@ -44,7 +44,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1 mt-4 md:mt-0">
             <h4 className="font-bold text-white mb-4">Shop With Us</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/sell" className="hover:text-white transition-colors">Sell on Isource</Link></li>
+              <li><Link href="https://sellers.isourcemarket.com" className="hover:text-white transition-colors">Sell on Isource</Link></li>
               <li><Link href="/brands" className="hover:text-white transition-colors">Brand Stores</Link></li>
               <li><Link href="/become-partner" className="hover:text-white transition-colors">Become a Partner</Link></li>
               <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
