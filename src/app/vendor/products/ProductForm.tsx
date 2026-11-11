@@ -1,6 +1,6 @@
-import { CustomSelect } from "@/components/ui/CustomSelect";
 "use client";
 
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import { type Category } from "@/types/catalog";
 
