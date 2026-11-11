@@ -41,10 +41,13 @@ export function ProductForm({ formAction, isPending, categories, initialData }: 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Category *</label>
-            <select name="categorySlug" defaultValue={initialData?.categorySlug || ""} required className="h-10 w-full rounded border border-border px-3 text-sm bg-white outline-none focus:border-primary">
-              <option value="" disabled>Select category</option>
-              {categories.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-            </select>
+            <CustomSelect
+              name="categorySlug"
+              options={categories.map((c: any) => ({ value: c.slug, label: c.name }))}
+              defaultValue={initialData?.categorySlug || ""}
+              placeholder="Select category"
+              required
+            />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">SKU *</label>
